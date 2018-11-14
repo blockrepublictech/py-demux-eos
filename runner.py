@@ -21,7 +21,7 @@ def commit_block():
 block_num = input('Enter a block number: ')
 
 # Tells demux there are callback functions
-demux.register(start_block, action)
+demux.register(start_block, action, commit_block)
 
 # Iterates through the transactions and actions in the block number
-demux.process_block(block_num, commit_block)
+demux.process_block(block_num)
