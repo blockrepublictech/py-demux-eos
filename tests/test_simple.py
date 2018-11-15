@@ -24,7 +24,7 @@ class TestSimplePyDemux(unittest.TestCase):
         block = c.get_block(1)
         assert block.get("transactions") == []
 
-    def test_register_callback_functions(self):
+    def test_register_all_callback_functions(self):
         """
         Ensure that all callback functions are registered by demux
         """
@@ -35,28 +35,72 @@ class TestSimplePyDemux(unittest.TestCase):
         def commit():
             print('Block committed.')
 
-        register(start, action, commit)
+        register(action, start, commit)
         from demux.demux import start_block_fn, action_fn, commit_block_fn
 
         assert start_block_fn == start
         assert action_fn == action
         assert commit_block_fn == commit
 
-    def test_callback_functions_called(self):
+    def test_start_and_commit_callback_functions_called(self):
         """
-        Ensure the start_block function is called when processing a block
+        Ensure the start_block and commit_block functions are called when processing a block
         """
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
 
-        register(mock_start_block, mock_action, mock_commit_block)
+        register(mock_action, mock_start_block, mock_commit_block)
         process_block(9999)
 
-        mock_start_block.assert_called()
-        #mock_action.assert_called()
-        mock_commit_block.assert_called()
+        mock_start_block.assert_called_once()
+        #mock_action.assert_called() #except ofr action
+        mock_commit_block.assert_called_once()
 
+    def test_no_start_block_function(self):
+        """
+        When users do not want to use the start_block function
+        """
+        mock_start_block = Mock()
+        mock_action = Mock()
+        mock_commit_block = Mock()
+
+        register(mock_action, mock_commit_block)
+        process_block(9999)
+
+        mock_start_block.assert_not_called()
+        mock_action.assert_called()
+        mock_commit_block.assert_called_once()
+
+    def test_no_commit_block_function(self):
+        """
+        When users do not want to use the commit_block function
+        """
+        mock_start_block = Mock()
+        mock_action = Mock()
+        mock_commit_block = Mock()
+
+        register(mock_action, mock_start_block)
+        process_block(9999)
+
+        mock_start_block.assert_called_once()
+        mock_action.assert_called()
+        mock_commit_block.assert_not_called()
+
+    def test_only_action_function(self):
+        """
+        When users only want to use the action function
+        """
+        mock_start_block = Mock()
+        mock_action = Mock()
+        mock_commit_block = Mock()
+
+        register(mock_action)
+        process_block(9999)
+
+        mock_start_block.assert_not_called()
+        mock_action.assert_called()
+        mock_commit_block.assert_not_called()
 
 #def test_smartcontract_filter_actions #in the future
 # def test_get_block
