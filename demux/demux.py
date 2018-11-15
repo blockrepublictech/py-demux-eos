@@ -6,7 +6,7 @@ commit_block_fn = None
 
 # Registers callback functions
 def register(start_block, action, commit_block):
-    global start_block_fn
+    global start_block_fn 
     start_block_fn = start_block
     global action_fn
     action_fn = action
@@ -24,7 +24,7 @@ def process_block(block_num):
     transaction_list = block.get('transactions') # get the list of transactions
     for t in transaction_list: # for every dict representing a transaction
         #Get the transaction ID and iterate over actions
-        if isinstance(t['trx'], str) == False:
+        if isinstance(t['trx'], str) == False: # if 'trx' is not a string (these are strange transactions)
             action_list = t['trx']['transaction']['actions'] # list of actions associated with each transaction
             for a in action_list:
                 action_fn(a)
