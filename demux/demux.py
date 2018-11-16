@@ -46,20 +46,20 @@ def process_block(block_num):
 # Function to process multiple blocks
     # start_block = block to start processing from
     # end_block = stops processing at this block (OPTIONAL)
-def process_blocks(start_block, end_block=None):
+def process_blocks(starting_block, end_block=None):
     # Get the current head block number
     head_block = get_head_block()
 
-    block_num = start_block
+    block_num = starting_block
 
     # Start and End blocks cannot be more than 1 greater than head block
-    if start_block > head_block + 1:
-        raise Exception("ERROR: Start block is past head block.")
+    if starting_block > head_block + 1:
+        assert False, "ERROR: Starting block is past head block."
 
     # Iterate block processing from start to end block
     if end_block is not None:
         if end_block > head_block + 1:
-            assert False, "ERROR:End block is past head block." #test will look for assertion error
+            assert False, "ERROR: End block is past head block." #test will look for assertion error
         while block_num < end_block:
             process_block(block_num)
             block_num += 1

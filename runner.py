@@ -31,9 +31,9 @@ demux.register(action, start_block, commit_block)
 
 # Input a start and end block for multi-block processing
 start_block = int(input('Enter start block number: '))
-end_block = int(input('Enter end block number: '))
+#end_block = int(input('Enter end block number: '))
 #end_block = None
 
 # Input a start and end block for multi-block processing
-#demux.process_blocks(start_block)
-demux.process_blocks(start_block, end_block)
+demux.process_blocks(start_block)
+#demux.process_blocks(start_block, end_block)
