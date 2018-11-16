@@ -102,6 +102,33 @@ class TestSimplePyDemux(unittest.TestCase):
         mock_action.assert_called()
         mock_commit_block.assert_not_called()
 
+#    def test_multiple_block_processing(self):
+        """
+        Ensure multiple blocks are processed using process_blocks() function
+        """
+        #Case 1 - both start and end block params passed
+
+        #Case 2 - only start block param passed
+
+
+#    def test_cannot_process_block_after_head_block(self)
+        """
+        Ensure exception is raised when start_block, current_block, end_block exceeds head_block
+        """
+        #mock get_info and get_block using patch
+
+#    def test_start_and_commit_block_receives_block_param(self):
+        """
+        Ensure start_block_fn and commit_block_fn successfully receives block as param
+        """
+
+#    def test_action_fn_receives_correct_param(self):
+        """
+        Ensures action_fn receives correct block, transaction, action params
+        """
+
+
+
 #def test_smartcontract_filter_actions #in the future
 # def test_get_block
     # we want to mock get_block function with mock return value = a manual block
