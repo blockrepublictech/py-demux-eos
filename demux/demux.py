@@ -75,10 +75,10 @@ def process_blocks(starting_block, end_block=None):
     # Iterate block processing from start block to end of chain
     if end_block is None:
          while True:
-                if block_num < head_block:
+                if block_num <= head_block:
                     process_block(block_num)
                     block_num += 1
-                if block_num == head_block:
+                if block_num > head_block:
                     time.sleep(0.1)
                     head_block = get_head_block()
             #instead call get_info all the time, and go to sleep if it is at the head  (100ms)

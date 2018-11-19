@@ -1,6 +1,6 @@
 import unittest
 import pytest
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 from eosapi import Client
 from demux.demux import register, process_block, process_blocks, get_head_block
 
