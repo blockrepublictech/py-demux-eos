@@ -4,6 +4,7 @@ from mock import Mock, patch
 from eosapi import Client
 from demux.demux import register, process_block, process_blocks, get_head_block
 
+
 # Basic tests for pydemux
 
 class TestSimplePyDemux(unittest.TestCase):
@@ -142,7 +143,7 @@ class TestSimplePyDemux(unittest.TestCase):
 
 #    def test_cannot_process_block_after_head_block(self)
 #        """
-#        Ensure exception is raised when start_block, current_block, end_block exceeds head_block
+#        Ensure exception is raised when start_block, current_block, end_block exceeds head_block, it shouldn't run anything if end block > head_block
 #        """
 #        #mock get_info and get_block using patch
 #        mock_get_info = Mock()
