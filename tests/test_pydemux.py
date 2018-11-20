@@ -156,3 +156,4 @@ class TestPyDemux(unittest.TestCase):
         assert mock_start_block.call_count == 2
         assert mock_action.call_count == 132
         assert mock_commit_block.call_count == 2
+        assert mock_sleep.call_count == 1

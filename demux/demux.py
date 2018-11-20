@@ -79,8 +79,10 @@ def process_blocks(starting_block, end_block=None):
                     process_block(block_num)
                     block_num += 1
                 if block_num > head_block:
-                    time.sleep(0.1)
+                    old_head_block = head_block
                     head_block = get_head_block()
+                    if old_head_block == head_block:
+                        time.sleep(0.1)
             #instead call get_info all the time, and go to sleep if it is at the head  (100ms)
             # test that the infinite loop works -->
                 #mock get_block and get_info, and sleep() and test that things are called in the right way
