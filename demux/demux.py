@@ -1,10 +1,19 @@
 from eosapi import Client
 import time
+from collections import defaultdict
 
+# Global variables
 start_block_fn = None
-action_fn = None
 commit_block_fn = None
-head_block = 0
+action_dict = None #action_list = {('account', 'name') : [action_fn1, action_fn2], (None, None) : [action_fn3, action_fn4]
+# default dict --> key is the name of account, value is list of actions
+    # must be able to apply actions that match and all actions that don't match
+#[account, name] : list of actions
+# list of actions
+#function to register aciton, if it is called with no account or name, it should be called on every action
+def initialise_action_dict():
+    global action_dict
+    action_dict = defaultdict(list)
 
 def get_head_block():
     c = Client(nodes=['https://node2.eosphere.io'])
@@ -12,17 +21,23 @@ def get_head_block():
     return head_block
 
 # Function to register callback functions
-#def register(start_block, action, commit_block):
-def register(action, start_block=None, commit_block=None):
+def register_start_commit(start_block=None, commit_block=None):
     global start_block_fn
     start_block_fn = start_block
-    global action_fn
-    action_fn = action
     global commit_block_fn
     commit_block_fn = commit_block
 
+# Function to register action functions, can specify an account and name, or None
+def register_action(action, account=None, name=None, isEffect=True):
+    global action_dict
+    if account is None and name is None:
+        action_dict[(None, None)].append(action)
+    if account is not None and name is not None:
+            action_dict[(account,name)].append(action)
+
 # Function to process a particular block
 def process_block(block_num):
+    global action_dict
     # Get the current head block number and block number does not exceed it
     global head_block
     head_block = get_head_block()
@@ -43,12 +58,20 @@ def process_block(block_num):
     for t in transaction_list: # for every dict representing a transaction
         #Get the transaction ID and iterate over actions
         if isinstance(t['trx'], str) == False: # if 'trx' is not a string (these are strange transactions)
-            action_list = t['trx']['transaction']['actions'] # list of actions associated with each transaction
-            for a in action_list:
-                action_fn(a, block=block, transaction=t) #block, transactions and actions
+            block_action_list = t['trx']['transaction']['actions'] # list of actions associated with each transaction
+            for a in block_action_list:
+#                print('')
+#                print("Action: account=", a['account'])
+#                print("action_balance=", a['data']['balance'])
+                #Running all the functions that want to get that action, in order registered
+                for action_fn in action_dict[(None, None)]:
+                    action_fn(a, block=block, transaction=t)
+                #Look up from dict, everything that matches the account and name for that action
+                for action_fn in action_dict[(a['account'], a['name'])]:
+                    action_fn(a, block=block, transaction=t)
     # After iterating through transaction IDs and actions, commit block processing
     if commit_block_fn is not None:
-        commit_block_fn(block=block) #block
+        commit_block_fn(block=block)
 
 # Function to process multiple blocks
     # start_block = block to start processing from
@@ -57,13 +80,10 @@ def process_blocks(starting_block, end_block=None):
     # Get the current head block number
     global head_block
     head_block = get_head_block()
-
     block_num = starting_block
-
     # Start and End blocks cannot be more than 1 greater than head block
     if starting_block > head_block + 1:
         assert False, "ERROR: Starting block is past head block."
-
     # Iterate block processing from start to end block
     if end_block is not None:
         if end_block > head_block + 1:
@@ -71,7 +91,6 @@ def process_blocks(starting_block, end_block=None):
         while block_num < end_block:
             process_block(block_num)
             block_num += 1
-
     # Iterate block processing from start block to end of chain
     if end_block is None:
          while True:
