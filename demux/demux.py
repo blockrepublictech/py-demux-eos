@@ -10,6 +10,11 @@ action_dict = None
 head_block = None
 last_irr_block = None
 block_id_dict = None #key=block_num, value=block_id
+block = None
+
+def get_a_block(block_num):
+    c = Client(nodes=['https://node2.eosphere.io'])
+    return c.get_block(block_num)
 
 # Function to initialise an empty dictionary of accounts per account-name
 def initialise_action_dict():
@@ -76,8 +81,8 @@ def process_block(block_num, include_effects=False, irreversible_only=False):  #
         else:
             assert False, "ERROR: Block number is past head block."
     # Get the current block if it is valid
-    c = Client(nodes=['https://node2.eosphere.io'])
-    block = c.get_block(block_num) # block is a dictionary
+    global block
+    block = get_a_block(block_num) # block is a dictionary
     #print("get_block=", block)
     #print("get_info=", c.get_info())
     # Start of block processing
@@ -143,33 +148,29 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
     if end_block is None:
          while True:
                 if block_num <= head_block:
-                    """
-                    print("head_block=", head_block)
-                    print("block_num=", block_num)
-                    if not irreversible_only: #if there rollback_fn is None, just don't say anything
-                        initialise_block_id_dict()
-                        global block_id_dict #key=block_num, value=block_id
-                        # get the current block
-                        c = Client(nodes=['https://node2.eosphere.io'])
-                        block = c.get_block(block_num)
-                        process_block(block_num, include_effects, irreversible_only)
-                        block_id_dict[block_num] = block.get('id')
-                        # If a rollback has occurred (current block does not point back to the last processed block)
-                        if block_num > 1:
-                            if block.get('previous') != block_id_dict[(block_num-1)]:
-                                print("first_block_id_dict=", block_id_dict)
-                                rollback_fn(get_last_irr_block_num()) # call the rollback function with last irr block num
-                                block_id_dict.clear() # clear the block id dict
-                                global last_irr_block # access the global var last_irr_block
-                                block_num = last_irr_block # block_num is set to last_irr_block
-                                block_id_dict[block_num] = c.get_block(block_num).get('id') # start block id dict with last irr block name/id
-                                block_num += 1 # re-commence from the next block
-                                print("second_block_id_dict=", block_id_dict)
+                    # If ONLY considering irreversible blocks
+                    if irreversible_only:
+                        process_block(block_num, include_effects, irreversible_only=True)
                         block_num += 1
-                    else:
-                        """
-                    process_block(block_num, include_effects, irreversible_only)
-                    block_num += 1
+                    # If considering ALL blocks
+                    elif not irreversible_only:
+                        process_block(block_num, include_effects, irreversible_only=False) # process the current block
+                        global block
+                        this_block = block # return the block object
+                        global last_irr_block
+                        last_irr_block = get_last_irr_block_num() # get the current last irreversible block number
+                        global block_id_dict
+                        # Update block_id dict to only store blocks > last irreversible block
+                        block_id_dict = {k : v for (k, v) in block_id_dict if k >= last_irr_block}
+                        block_id_dict[block_num] = this_block['id'] # add this block to the block id dict
+                        print("block_id_dict=", block_id_dict)
+                        # If a rollback has occurred (AKA this block does not point to the last processed block in block_id_dict)
+                        if block_num-1 in block_id_dict and this_block['previous'] != block_id_dict[(block_num-1)]:
+                            if rollback_fn is not None:
+                                rollback_fn(last_irr_block)
+                            block_num = last_irr_block + 1
+                        else:
+                            block_num += 1
                 if block_num > head_block:
                     old_head_block = head_block
                     if irreversible_only:
