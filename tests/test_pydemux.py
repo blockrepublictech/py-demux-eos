@@ -139,6 +139,7 @@ class TestPyDemux(unittest.TestCase):
         """
         Test that continuous polling the block chain for new blocks works correctly
         """
+        initialise_action_dict()
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999998},
                                                 {'head_block_num': 9999998},
                                                 {'head_block_num': 9999998},
@@ -152,7 +153,8 @@ class TestPyDemux(unittest.TestCase):
         mock_commit_block = Mock()
 
         # register the mock callback functions
-        register(mock_action, mock_start_block, mock_commit_block)
+        register_start_commit(mock_start_block, mock_commit_block)
+        register_action(mock_action)
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
             process_blocks(9999998)
