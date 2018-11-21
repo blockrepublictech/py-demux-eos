@@ -89,3 +89,5 @@ fake_block2 = {
   ],
   "block_num": 200
 }
+
+# Fake get_bloc

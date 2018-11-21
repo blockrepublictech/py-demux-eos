@@ -1,7 +1,7 @@
 import unittest
 import pytest
-from mock import Mock, patch, call
-from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict
+from unittest.mock import Mock, patch, call
+from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict, initialise_block_id_dict
 from tests.utils import block_1, block_9999, block_10000, block_9999998, block_9999999, fake_block1, fake_block2
 from collections import defaultdict
 
@@ -106,8 +106,7 @@ class TestPyDemux(unittest.TestCase):
     @patch.object(Client, 'get_info')
     def test_cannot_process_past_head_block(self, mock_get_info_head_block, mock_get_block):
         """
-        Tests when the end block is more than one block greater than the head
-        block, an assertion is raised and no block is processed
+        Tests when the end block is more than one block greater than the head block, an assertion is raised and no block is processed
         """
         with pytest.raises(AssertionError) as excinfo:
 
@@ -129,3 +128,33 @@ class TestPyDemux(unittest.TestCase):
             mock_commit_block.assert_not_called()
 
         assert 'ERROR: End block is past head block.' in str(excinfo.value)
+
+    @patch.object(Client, 'get_block')
+    @patch.object(Client, 'get_info')
+    def test_cannot_process_past_last_irreversible_block(self, mock_get_info_irr_block, mock_get_block):
+        """
+        Tests when the end block is more than one block greater than the last irreversible block, an assertion is raised and no block is processed
+        """
+        with pytest.raises(AssertionError) as excinfo:
+
+            mock_get_info_irr_block.return_value = {'last_irreversible_block_num': 9999998}
+
+            mock_start_block = Mock()
+            mock_action = Mock()
+            mock_commit_block = Mock()
+
+            # register the mock callback functions
+            register_start_commit(mock_start_block, mock_commit_block)
+            register_action(mock_action)
+            # attempts to process the mock blocks 9999998 to 10000000
+            process_blocks(9999998, 10000000, irreversible_only=True)
+
+            mock_get_block.assert_not_called()
+            mock_start_block.assert_not_called()
+            mock_action.assert_not_called()
+            mock_commit_block.assert_not_called()
+
+        assert 'ERROR: End block is past last irreversible block.' in str(excinfo.value)
+
+
+    

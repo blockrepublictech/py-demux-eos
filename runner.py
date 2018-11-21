@@ -24,6 +24,9 @@ def action2(action, block, transaction):
 def action3(action, block, transaction):
     print("Action3 for random account and name")
 
+def effect_action(action, **kwargs):
+    print("Effect function")
+
 # Callback commit block function (OPTIONAL)
 # Commit block when entire process is
 # Actual: Commit the FB transaction
@@ -38,18 +41,23 @@ demux.register_action(action, "eosio.unregd", "add")
 demux.register_action(action2, "eosio.unregd", "add")
 demux.register_action(action1)
 demux.register_action(action3, "randomAccount", "randomName")
+demux.register_action(effect_action, is_effect=True)
 
 # Input block number to be stored
-#block_num = input('Enter a block number: ')
+block_num = input('Enter a block number: ')
 # Iterates through the transactions and actions of the block number
-#demux.process_block(block_num)
+demux.process_block(block_num)
+demux.process_block(block_num, include_effects=True)
 #print("action_dict=", demux.action_dict)
+print("head_block=", demux.head_block)
 
 
 # Input a start and end block for multi-block processing
-start_block = int(input('Enter start block number: '))
-end_block = int(input('Enter end block number: '))
+#start_block = int(input('Enter start block number: '))
+#end_block = int(input('Enter end block number: '))
 #end_block = None
 # Input a start and end block for multi-block processing
 #demux.process_blocks(start_block)
-demux.process_blocks(start_block, end_block)
+#demux.process_blocks(start_block, end_block, include_effects=True) # only effects
+#demux.process_blocks(start_block, end_block) # only updates
+#print('action_dict=', demux.action_dict)
