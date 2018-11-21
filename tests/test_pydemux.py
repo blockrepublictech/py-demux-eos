@@ -155,6 +155,3 @@ class TestPyDemux(unittest.TestCase):
             mock_commit_block.assert_not_called()
 
         assert 'ERROR: End block is past last irreversible block.' in str(excinfo.value)
-
-
-    

@@ -1,7 +1,7 @@
 import unittest
 import pytest
 from mock import Mock, patch
-from eosapi import Client
+#from eosapi import Client
 from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block
 
 
@@ -12,16 +12,6 @@ class TestSimplePyDemux(unittest.TestCase):
     #1. setup test with register() and make fake functions to give to it
     #2. setup a block and assert that something was called
     #def setUp():
-    #    a
-
-    def test_manual_block_with_no_transactions(self):
-        """
-        Ensure we can get a block with no transactions
-        """
-        c = Client(nodes=['https://node2.eosphere.io'])
-        block = c.get_block(1)
-        assert block.get("transactions") == []
-
     def test_register_all_callback_functions(self):
         """
         Ensure that all callback functions are registered by demux

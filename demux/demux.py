@@ -143,6 +143,7 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
     if end_block is None:
          while True:
                 if block_num <= head_block:
+                    """
                     print("head_block=", head_block)
                     print("block_num=", block_num)
                     if not irreversible_only: #if there rollback_fn is None, just don't say anything
@@ -166,8 +167,9 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
                                 print("second_block_id_dict=", block_id_dict)
                         block_num += 1
                     else:
-                        process_block(block_num, include_effects, irreversible_only)
-                        block_num += 1
+                        """
+                    process_block(block_num, include_effects, irreversible_only)
+                    block_num += 1
                 if block_num > head_block:
                     old_head_block = head_block
                     if not irreversible_only:
