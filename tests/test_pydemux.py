@@ -155,3 +155,40 @@ class TestPyDemux(unittest.TestCase):
             mock_commit_block.assert_not_called()
 
         assert 'ERROR: End block is past last irreversible block.' in str(excinfo.value)
+
+    @patch.object(Client, 'get_block')
+    @patch.object(Client, 'get_info')
+    @patch('demux.demux.time.sleep')
+    def test_continuous_block_processing(self, mock_sleep,
+                                         mock_get_info_head_block,
+                                         mock_get_block):
+        """
+        Test that continuous polling the block chain for new blocks works correctly
+        """
+        initialise_action_dict()
+        mock_get_info_head_block.side_effect = [{'head_block_num': 9999998},
+                                                {'head_block_num': 9999998},
+                                                {'head_block_num': 9999998},
+                                                {'head_block_num': 9999999},
+                                                {'head_block_num': 9999999}]
+        # get block iterates through blocks each time it is called
+        mock_get_block.side_effect = [block_9999998, block_9999999]
+
+        mock_start_block = Mock()
+        mock_action = Mock()
+        mock_commit_block = Mock()
+
+        # register the mock callback functions
+        register_start_commit(mock_start_block, mock_commit_block)
+        register_action(mock_action)
+        # process the mock blocks 9999
+        with pytest.raises(StopIteration) as excinfo:
+            process_blocks(9999998)
+
+        # assertions
+        assert mock_get_block.call_count == 2
+        assert mock_get_block.call_args_list == [call(9999998), call(9999999)]
+        assert mock_start_block.call_count == 2
+        assert mock_action.call_count == 132
+        assert mock_commit_block.call_count == 2
+        assert mock_sleep.call_count == 1

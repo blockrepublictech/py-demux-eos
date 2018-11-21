@@ -1,7 +1,7 @@
 import unittest
 import pytest
-from mock import Mock, patch
-#from eosapi import Client
+from unittest.mock import Mock, patch
+from eosapi import Client
 from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block
 
 

@@ -24,12 +24,12 @@ def initialise_block_id_dict():
 # Function to get the current head block in the chain
 def get_head_block():
     c = Client(nodes=['https://node2.eosphere.io'])
-    head_block = c.get_info().get('head_block_num')
+    head_block = c.get_info()['head_block_num']
     return head_block
 
 def get_last_irr_block_num():
     c = Client(nodes=['https://node2.eosphere.io'])
-    irr_block = c.get_info().get('last_irreversible_block_num')
+    irr_block = c.get_info()['last_irreversible_block_num']
     return irr_block
 
 # Function to register callback functions
@@ -79,7 +79,7 @@ def process_block(block_num, include_effects=False, irreversible_only=False):  #
     c = Client(nodes=['https://node2.eosphere.io'])
     block = c.get_block(block_num) # block is a dictionary
     #print("get_block=", block)
-    print("get_info=", c.get_info())
+    #print("get_info=", c.get_info())
     # Start of block processing
     if start_block_fn is not None:
         start_block_fn(block=block) #find a named argument 'block' and assign it block when it's parsed in
@@ -172,7 +172,7 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
                     block_num += 1
                 if block_num > head_block:
                     old_head_block = head_block
-                    if not irreversible_only:
+                    if irreversible_only:
                         head_block = get_last_irr_block_num()
                     else:
                         head_block = get_head_block()
