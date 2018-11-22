@@ -6,14 +6,7 @@ from tests.utils import block_1, block_9999, block_10000, block_9999998, block_9
 from collections import defaultdict
 
 class TestActionsPyDemux(unittest.TestCase):
-    """
-    def setup_method(self, method):
-        self.mock_start_block = Mock()
-        self.mock_action1 = Mock()
-        self.mock_action2 = Mock()
-        self.mock_action3 = Mock()
-        self.mock_commit_block = Mock()
-    """
+
     @patch.object(Client, 'get_block')
     @patch.object(Client, 'get_info')
     def test_register_multiple_action_functions(self, mock_get_info_head_block, mock_get_block):
@@ -41,7 +34,6 @@ class TestActionsPyDemux(unittest.TestCase):
         register_action(mock_action3)
         # process the mock fake block 2
         process_block(200)
-
         # assertions
         assert mock_get_block.call_count == 1
         assert mock_start_block.call_count == 1
@@ -49,7 +41,6 @@ class TestActionsPyDemux(unittest.TestCase):
         assert mock_action2.call_count == 1
         assert mock_action3.call_count == 2
         assert mock_commit_block.call_count == 1
-
         # action_dict assertions
         from demux.demux import action_dict
         assert action_dict[('account21', 'name21', 'updates')] == [mock_action1]
@@ -91,7 +82,6 @@ class TestActionsPyDemux(unittest.TestCase):
         register_action(mock_action4, "account22", "name22")
         # process the mock fake blocks 1 and 2
         process_blocks(100,102)
-
         # assertions
         assert mock_get_block.call_count == 2
         assert mock_get_block.call_args_list == [call(100), call(101)]
@@ -101,14 +91,12 @@ class TestActionsPyDemux(unittest.TestCase):
         assert mock_action3.call_count == 3
         assert mock_action4.call_count == 1
         assert mock_commit_block.call_count == 2
-
         # action_dict assertions
         from demux.demux import action_dict
         assert action_dict[('account11', 'name11', 'updates')] == [mock_action1]
         assert action_dict[('account21', 'name21', 'updates')] == [mock_action2]
         assert action_dict[(None, None, 'updates')] == [mock_action3]
         assert action_dict[('account22', 'name22', 'updates')] == [mock_action4]
-
         # action functions call order assertions (order is: action3-account11, action1-account11, action3-account21, action2-account21, action3-account22, action4-account22
         m.assert_has_calls([call.mock_action3(fake_block1.get('transactions')[0]['trx']['transaction'].get('actions')[0], block=fake_block1, transaction=fake_block1.get('transactions')[0]),
                             call.mock_action1(fake_block1.get('transactions')[0]['trx']['transaction'].get('actions')[0], block=fake_block1, transaction=fake_block1.get('transactions')[0]),
@@ -132,7 +120,6 @@ class TestActionsPyDemux(unittest.TestCase):
         mock_action3 = Mock()
         mock_action4 = Mock()
         mock_commit_block = Mock()
-
         # set up the action_dict
         initialise_action_dict()
         # register the mock callback functions
@@ -143,14 +130,12 @@ class TestActionsPyDemux(unittest.TestCase):
         register_action(mock_action4, "account22", "name22", is_effect=True)
         # process the mock fake blocks 1 and 2
         process_blocks(100,102, include_effects=True)
-
         # action_dict assertions that updates/effects stored correctly
         from demux.demux import action_dict
         assert action_dict[('account11', 'name11', 'effects')] == [mock_action1]
         assert action_dict[('account21', 'name21', 'updates')] == [mock_action2]
         assert action_dict[(None, None, 'effects')] == [mock_action3]
         assert action_dict[('account22', 'name22', 'effects')] == [mock_action4]
-
         # assertions that function calls correct
         assert mock_get_block.call_count == 2
         assert mock_get_block.call_args_list == [call(100), call(101)]

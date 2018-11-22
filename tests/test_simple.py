@@ -8,10 +8,7 @@ from demux.demux import register_start_commit, register_action, process_block, p
 # Basic tests for pydemux
 
 class TestSimplePyDemux(unittest.TestCase):
-    #test_register call back functions
-    #1. setup test with register() and make fake functions to give to it
-    #2. setup a block and assert that something was called
-    #def setUp():
+
     def test_register_all_callback_functions(self):
         """
         Ensure that all callback functions are registered by demux
