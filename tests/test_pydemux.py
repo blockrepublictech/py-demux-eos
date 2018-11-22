@@ -2,7 +2,7 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch, call
 from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict, initialise_block_id_dict
-from tests.utils import block_1, block_9999, block_10000, fake_block1, fake_block2
+from tests.utils import block_1, fake_block1, fake_block2
 from collections import defaultdict
 
 # Robust tests for pydemux
@@ -42,8 +42,8 @@ class TestPyDemux(unittest.TestCase):
         Tests block processing on a mocked block
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
-        # get_block returns manual block_9999
-        mock_get_block.return_value = block_9999
+        # get_block returns fake_block1
+        mock_get_block.return_value = fake_block1
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
@@ -52,14 +52,14 @@ class TestPyDemux(unittest.TestCase):
         # register the mock callback functions
         register_start_commit(mock_start_block, mock_commit_block)
         register_action(mock_action)
-        # process the mock blocks 9999
-        process_block(9999)
+        # process the mock block fake_block1
+        process_block(100)
 
         # assertions
         mock_get_block.assert_called_once()
-        mock_get_block.assert_called_with(9999)
+        mock_get_block.assert_called_with(100)
         mock_start_block.assert_called_once()
-        assert mock_action.call_count == 14
+        assert mock_action.call_count == 1
         mock_commit_block.assert_called_once()
 
     @patch.object(Client, 'get_block')
@@ -70,7 +70,7 @@ class TestPyDemux(unittest.TestCase):
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
         # get block iterates through blocks each time it is called
-        mock_get_block.side_effect = [block_9999, block_10000]
+        mock_get_block.side_effect = [fake_block1, fake_block2]
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
@@ -80,13 +80,13 @@ class TestPyDemux(unittest.TestCase):
         register_start_commit(mock_start_block, mock_commit_block)
         register_action(mock_action)
         # process the mock blocks 9999 to 10000
-        process_blocks(9999, 10001)
+        process_blocks(100, 102)
 
         # assertions
         assert mock_get_block.call_count == 2
-        assert mock_get_block.call_args_list == [call(9999), call(10000)]
+        assert mock_get_block.call_args_list == [call(100), call(101)]
         assert mock_start_block.call_count == 2
-        assert mock_action.call_count == 19
+        assert mock_action.call_count == 3
         assert mock_commit_block.call_count == 2
 
     @patch.object(Client, 'get_block')
@@ -97,7 +97,7 @@ class TestPyDemux(unittest.TestCase):
         """
         with pytest.raises(AssertionError) as excinfo:
 
-            mock_get_info_head_block.return_value = {'head_block_num': 9999}
+            mock_get_info_head_block.return_value = {'head_block_num': 99}
 
             mock_start_block = Mock()
             mock_action = Mock()
@@ -107,7 +107,7 @@ class TestPyDemux(unittest.TestCase):
             register_start_commit(mock_start_block, mock_commit_block)
             register_action(mock_action)
             # attempts to process the mock blocks 9999998 to 10000000
-            process_blocks(9999, 10001)
+            process_blocks(100, 101)
 
             mock_get_block.assert_not_called()
             mock_start_block.assert_not_called()
@@ -124,7 +124,7 @@ class TestPyDemux(unittest.TestCase):
         """
         with pytest.raises(AssertionError) as excinfo:
 
-            mock_get_info_irr_block.return_value = {'last_irreversible_block_num': 9999}
+            mock_get_info_irr_block.return_value = {'last_irreversible_block_num': 99}
 
             mock_start_block = Mock()
             mock_action = Mock()
@@ -134,7 +134,7 @@ class TestPyDemux(unittest.TestCase):
             register_start_commit(mock_start_block, mock_commit_block)
             register_action(mock_action)
             # attempts to process the mock blocks 9999998 to 10000000
-            process_blocks(9999, 10001, irreversible_only=True)
+            process_blocks(100, 101, irreversible_only=True)
 
             mock_get_block.assert_not_called()
             mock_start_block.assert_not_called()
