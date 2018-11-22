@@ -2,11 +2,11 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch
 from eosapi import Client
-from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block
-
+from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, initialise_action_dict
 
 # Basic tests for pydemux, run the process_block() functions and connect to the Client
 
+@pytest.mark.skip(reason="Takes too long to execute, connects to Client each time")
 class TestSimplePyDemux(unittest.TestCase):
 
     def test_register_all_callback_functions(self):
@@ -28,12 +28,14 @@ class TestSimplePyDemux(unittest.TestCase):
 #        assert action_fn == action
         assert commit_block_fn == commit
 
-    @pytest.mark.skip(reason="Not sure why this test is failing, says action() gets unexpected kwarg block")
+#    @pytest.mark.skip(reason="Not sure why this test is failing, says action() gets unexpected kwarg block")
     def test_start_and_commit_callback_functions_called(self):
         """
         Ensure the start_block and commit_block functions are called when processing a block
         """
-
+        # set up the action_dict
+        initialise_action_dict()
+        # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
@@ -50,6 +52,9 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         When users do not want to use the start_block function
         """
+        # set up the action_dict
+        initialise_action_dict()
+        # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
@@ -66,6 +71,9 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         When users do not want to use the commit_block function
         """
+        # set up the action_dict
+        initialise_action_dict()
+        # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
@@ -82,6 +90,9 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         When users only want to use the action function
         """
+        # set up the action_dict
+        initialise_action_dict()
+        # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
@@ -98,6 +109,9 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         Ensure we can process multiple blocks with a start and end block
         """
+        # set up the action_dict
+        initialise_action_dict()
+        # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()

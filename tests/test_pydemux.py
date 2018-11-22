@@ -5,7 +5,7 @@ from demux.demux import register_start_commit, register_action, process_block, p
 from tests.utils import block_1, fake_block1, fake_block2
 from collections import defaultdict
 
-# Robust tests for pydemux
+# Tests for py-demux
 
 class TestPyDemux(unittest.TestCase):
 

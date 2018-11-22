@@ -20,12 +20,6 @@ fake_block1 = {
             {
               "account": "account11",
               "name": "name11",
-              "authorization": [
-                {
-                  "actor": "account11",
-                  "permission": "active"
-                }
-              ],
               "data": {
                 "ethereum_address": "0xaf6a0d44c77c915c0f099bbd85236459093c00b7",
                 "balance": "1.0000 EOS"
@@ -53,12 +47,6 @@ fake_block2 = {
             {
               "account": "account21",
               "name": "name21",
-              "authorization": [
-                {
-                  "actor": "account21",
-                  "permission": "active"
-                }
-              ],
               "data": {
                 "ethereum_address": "0xaf6a0d44c77c915c0f099bbd85236459093c00b7",
                 "balance": "1.0000 EOS"
@@ -67,12 +55,6 @@ fake_block2 = {
             {
               "account": "account22",
               "name": "name22",
-              "authorization": [
-                {
-                  "actor": "account2",
-                  "permission": "active"
-                }
-              ],
               "data": {
                 "ethereum_address": "0xaf6a0d44c77c915c0f099bbd85236459093c00b7",
                 "balance": "2.0000 EOS"

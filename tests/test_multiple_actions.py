@@ -5,6 +5,8 @@ from demux.demux import register_start_commit, register_action, process_block, p
 from tests.utils import block_1, fake_block1, fake_block2
 from collections import defaultdict
 
+# Tests for py-demux with multiple registered action functions
+
 class TestActionsPyDemux(unittest.TestCase):
 
     @patch.object(Client, 'get_block')
