@@ -2,7 +2,7 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch, call
 from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict
-from tests.utils import block_1, block_9999, block_10000, block_9999998, block_9999999, fake_block1, fake_block2
+from tests.utils import block_1, block_9999, block_10000, fake_block1, fake_block2
 from collections import defaultdict
 
 class TestActionsPyDemux(unittest.TestCase):

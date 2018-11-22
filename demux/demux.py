@@ -148,7 +148,7 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
          while True:
                 # Only process blocks that are before or at the head of the chain
                 if block_num <= head_block:
-                    # If irreversible block only, the last irreverisble block is the 'head' of the chain
+                    # If irreversible block only: the last irreverisble block is the 'head' of the chain
                     if irreversible_only:
                         process_block(block_num, include_effects, irreversible_only=True)
                         block_num += 1

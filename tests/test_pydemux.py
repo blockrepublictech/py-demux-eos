@@ -2,7 +2,7 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch, call
 from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict, initialise_block_id_dict
-from tests.utils import block_1, block_9999, block_10000, block_9999998, block_9999999, fake_block1, fake_block2
+from tests.utils import block_1, block_9999, block_10000, fake_block1, fake_block2
 from collections import defaultdict
 
 # Robust tests for pydemux
@@ -16,20 +16,18 @@ class TestPyDemux(unittest.TestCase):
         Ensure we can process a block with no transactions
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
-        # return block 1
+        # get_block returns manual block_1
         mock_get_block.return_value = block_1
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
-
         # register the mock callback functions
         register_start_commit(mock_start_block, mock_commit_block)
         register_action(mock_action)
-        # process the mock blocks 9999
+        # process the mock block_1
         initialise_action_dict()
         process_block(1)
-
         # assertions
         mock_get_block.assert_called_once()
         mock_get_block.assert_called_with(1)
@@ -44,7 +42,7 @@ class TestPyDemux(unittest.TestCase):
         Tests block processing on a mocked block
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
-        # set the patched get_block function to return a manual block 9999
+        # get_block returns manual block_9999
         mock_get_block.return_value = block_9999
         # mock callback functions
         mock_start_block = Mock()
@@ -56,6 +54,7 @@ class TestPyDemux(unittest.TestCase):
         register_action(mock_action)
         # process the mock blocks 9999
         process_block(9999)
+
         # assertions
         mock_get_block.assert_called_once()
         mock_get_block.assert_called_with(9999)
@@ -71,8 +70,8 @@ class TestPyDemux(unittest.TestCase):
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
         # get block iterates through blocks each time it is called
-        mock_get_block.side_effect = [block_9999998, block_9999999]
-
+        mock_get_block.side_effect = [block_9999, block_10000]
+        # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
@@ -80,14 +79,14 @@ class TestPyDemux(unittest.TestCase):
         # register the mock callback functions
         register_start_commit(mock_start_block, mock_commit_block)
         register_action(mock_action)
-        # process the mock blocks 9999
-        process_blocks(9999998, 10000000)
+        # process the mock blocks 9999 to 10000
+        process_blocks(9999, 10001)
 
         # assertions
         assert mock_get_block.call_count == 2
-        assert mock_get_block.call_args_list == [call(9999998), call(9999999)]
+        assert mock_get_block.call_args_list == [call(9999), call(10000)]
         assert mock_start_block.call_count == 2
-        assert mock_action.call_count == 132
+        assert mock_action.call_count == 19
         assert mock_commit_block.call_count == 2
 
     @patch.object(Client, 'get_block')
@@ -98,7 +97,7 @@ class TestPyDemux(unittest.TestCase):
         """
         with pytest.raises(AssertionError) as excinfo:
 
-            mock_get_info_head_block.return_value = {'head_block_num': 9999998}
+            mock_get_info_head_block.return_value = {'head_block_num': 9999}
 
             mock_start_block = Mock()
             mock_action = Mock()
@@ -108,7 +107,7 @@ class TestPyDemux(unittest.TestCase):
             register_start_commit(mock_start_block, mock_commit_block)
             register_action(mock_action)
             # attempts to process the mock blocks 9999998 to 10000000
-            process_blocks(9999998, 10000000)
+            process_blocks(9999, 10001)
 
             mock_get_block.assert_not_called()
             mock_start_block.assert_not_called()
@@ -125,7 +124,7 @@ class TestPyDemux(unittest.TestCase):
         """
         with pytest.raises(AssertionError) as excinfo:
 
-            mock_get_info_irr_block.return_value = {'last_irreversible_block_num': 9999998}
+            mock_get_info_irr_block.return_value = {'last_irreversible_block_num': 9999}
 
             mock_start_block = Mock()
             mock_action = Mock()
@@ -135,7 +134,7 @@ class TestPyDemux(unittest.TestCase):
             register_start_commit(mock_start_block, mock_commit_block)
             register_action(mock_action)
             # attempts to process the mock blocks 9999998 to 10000000
-            process_blocks(9999998, 10000000, irreversible_only=True)
+            process_blocks(9999, 10001, irreversible_only=True)
 
             mock_get_block.assert_not_called()
             mock_start_block.assert_not_called()
@@ -157,18 +156,13 @@ class TestPyDemux(unittest.TestCase):
         initialise_action_dict()
         initialise_block_id_dict()
         # Internal implementation of get_info() which keeps head_block as var,
-        mock_get_info_head_block.side_effect = [{'head_block_num': 9999998, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999998, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999998, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999999, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999999, 'last_irreversible_block_num' : 9999990}]
+        mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9900}]
         # get block iterates through blocks each time it is called
-        # Internal implementation of get_block(), test that you are never calling for block after head_block, test you sleep() if block=head_block
-        # After sleep has been called once, advance the head block, sleep called again (raises exception it is expecting),
-        # Never sleep unless at the head of blockchain
-        # 1st time sleep, increment head block
-        # 2nd time sleep, catches exception
-        mock_get_block.side_effect = [block_9999998, block_9999999]
+        mock_get_block.side_effect = [block_9999, block_10000]
 
         mock_start_block = Mock()
         mock_action = Mock()
@@ -179,15 +173,22 @@ class TestPyDemux(unittest.TestCase):
         register_action(mock_action)
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
-            process_blocks(9999998)
+            process_blocks(9999)
 
         # assertions
         assert mock_get_block.call_count == 2
-        assert mock_get_block.call_args_list == [call(9999998), call(9999999)]
+        assert mock_get_block.call_args_list == [call(9999), call(10000)]
         assert mock_start_block.call_count == 2
-        assert mock_action.call_count == 132
+        assert mock_action.call_count == 19
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
+
+        # NOTES FROM 22/11/18
+        # Internal implementation of get_block(), test that you are never calling for block after head_block, test you sleep() if block=head_block
+        # After sleep has been called once, advance the head block, sleep called again (raises exception it is expecting),
+        # Never sleep unless at the head of blockchain
+        # 1st time sleep, increment head block
+        # 2nd time sleep, catches exception
 
     @pytest.mark.skip(reason="Need to fix this test it is incorrect")
     @patch.object(Client, 'get_block')
@@ -198,18 +199,18 @@ class TestPyDemux(unittest.TestCase):
                                          mock_get_info_head_block,
                                          mock_get_block):
         """
-        Test that continuous polling the block chain for new blocks works correctly
+        Test that rollbacks are dealt with correctly when continously polling the block chain
         """
         initialise_action_dict()
         initialise_block_id_dict()
-        mock_get_info_head_block.side_effect = [{'head_block_num': 9999998, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999998, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999998, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999999, 'last_irreversible_block_num' : 9999990},
-                                                {'head_block_num': 9999999, 'last_irreversible_block_num' : 9999990}]
+        mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9900}]
         # get block iterates through blocks each time it is called
-        mock_get_block.side_effect = [block_9999998, block_9999999]
-
+        mock_get_block.side_effect = [block_9999, block_10000]
+        # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
@@ -219,16 +220,17 @@ class TestPyDemux(unittest.TestCase):
         register_action(mock_action)
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
-            process_blocks(9999998)
+            process_blocks(9999)
 
         # assertions
         assert mock_get_block.call_count == 2
-        assert mock_get_block.call_args_list == [call(9999998), call(9999999)]
+        assert mock_get_block.call_args_list == [call(9999), call(10000)]
         assert mock_start_block.call_count == 2
-        assert mock_action.call_count == 132
+        assert mock_action.call_count == 19
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
+        # NOTES FROM 22/11/18
         #Fake scenario
             # same as previous test but when we get to sleep, simulate rollback
             # increment head_block,
