@@ -2,6 +2,8 @@ from eosapi import Client
 import time
 from collections import defaultdict
 from eosapi.exceptions import HttpAPIError
+from operator import xor
+
 
 class Demux(object):
     def __init__(self, client_node='https://node2.eosphere.io',
@@ -31,16 +33,8 @@ class Demux(object):
 
     # Function to register action functions: can specify an account and name, or None
     def register_action(self, action, account=None, name=None, is_effect=False):
-        if is_effect:
-            if account is None and name is None:
-                self._action_dict[(None, None, 'effects')].append(action)
-            if account is not None and name is not None:
-                self._action_dict[(account,name, 'effects')].append(action)
-        elif not is_effect:
-            if account is None and name is None:
-                self._action_dict[(None, None, 'updates')].append(action)
-            if account is not None and name is not None:
-                self._action_dict[(account, name, 'updates')].append(action)
+        assert not xor(bool(account), bool(name)), "Account and name must both be valid or both be none"
+        self._action_dict[(account,name, 'effects' if is_effect else 'updates')].append(action)
 
     # Function to process a block given a specified block number
     def process_block(self, block_num, include_effects=False, irreversible_only=False): #head_block=some head block that may or may not be supplied
@@ -68,20 +62,13 @@ class Demux(object):
             if isinstance(t['trx'], str) == False: # ignore if 'trx' is a string (these are strange transactions)
                 block_action_list = t['trx']['transaction']['actions'] # block_action_list = list of actions associated with each block
                 for a in block_action_list:
-                    # Only fire Effects if asked
-                    if include_effects:
-                        #Running all the functions that want to get that action, in order they're registered
-                        for action_fn in self._action_dict[(None, None, 'effects')]:
-                            action_fn(a, block=self._block, transaction=t)
-                        #Look up from dict, everything that matches the account and name for that action and run it
-                        for action_fn in self._action_dict[(a['account'], a['name'], 'effects')]:
-                            action_fn(a, block=self._block, transaction=t)
-                    # Run Update functions if include_effects not specified
-                    elif not include_effects:
-                        for action_fn in self._action_dict[(None, None, 'updates')]:
-                            action_fn(a, block=self._block, transaction=t)
-                        for action_fn in self._action_dict[(a['account'], a['name'], 'updates')]:
-                            action_fn(a, block=self._block, transaction=t)
+                    #Running all the functions that want to get that action, in order they're registered
+                    # and depending upon if they are effects or updates
+                    for action_fn in self._action_dict[(None, None, 'effects' if include_effects else 'updates')]:
+                        action_fn(a, block=self._block, transaction=t)
+                    #Look up from dict, everything that matches the account and name for that action and run it
+                    for action_fn in self._action_dict[(a['account'], a['name'], 'effects' if include_effects else 'updates')]:
+                        action_fn(a, block=self._block, transaction=t)
         # After iterating through transaction IDs and actions, commit block processing
         if self._commit_block_fn is not None:
             self._commit_block_fn(block=self._block)
