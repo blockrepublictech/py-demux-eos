@@ -1,11 +1,7 @@
 import unittest
 import pytest
 from unittest.mock import Mock, patch, call
-from demux import (register_start_commit, register_action,
-                         process_block, process_blocks, get_head_block,
-                         Client, initialise_action_dict,
-                         initialise_block_id_dict, register_rollback)
-
+from demux import Demux, Client
 from tests.utils import (block_1, fake_block1, fake_block2, block_9999,
                          block_10000, fake_block_10000)
 from collections import defaultdict
@@ -29,11 +25,11 @@ class TestPyDemux(unittest.TestCase):
         mock_action = Mock()
         mock_commit_block = Mock()
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
         # process the mock block_1
-        initialise_action_dict()
-        process_block(1)
+        d.process_block(1)
         # assertions
         mock_get_block.assert_called_once()
         mock_get_block.assert_called_with(1)
@@ -56,10 +52,11 @@ class TestPyDemux(unittest.TestCase):
         mock_commit_block = Mock()
 
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
         # process the mock block fake_block1
-        process_block(100)
+        d.process_block(100)
 
         # assertions
         mock_get_block.assert_called_once()
@@ -83,10 +80,11 @@ class TestPyDemux(unittest.TestCase):
         mock_commit_block = Mock()
 
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
         # process the mock blocks 9999 to 10000
-        process_blocks(100, 102)
+        d.process_blocks(100, 102)
 
         # assertions
         assert mock_get_block.call_count == 2
@@ -110,10 +108,11 @@ class TestPyDemux(unittest.TestCase):
             mock_commit_block = Mock()
 
             # register the mock callback functions
-            register_start_commit(mock_start_block, mock_commit_block)
-            register_action(mock_action)
+            d = Demux(start_block_fn=mock_start_block,
+                      commit_block_fn=mock_commit_block)
+            d.register_action(mock_action)
             # attempts to process the mock blocks 9999998 to 10000000
-            process_blocks(100, 101)
+            d.process_blocks(100, 101)
 
             mock_get_block.assert_not_called()
             mock_start_block.assert_not_called()
@@ -137,10 +136,11 @@ class TestPyDemux(unittest.TestCase):
             mock_commit_block = Mock()
 
             # register the mock callback functions
-            register_start_commit(mock_start_block, mock_commit_block)
-            register_action(mock_action)
+            d = Demux(start_block_fn=mock_start_block,
+                      commit_block_fn=mock_commit_block)
+            d.register_action(mock_action)
             # attempts to process the mock blocks 9999998 to 10000000
-            process_blocks(100, 101, irreversible_only=True)
+            d.process_blocks(100, 101, irreversible_only=True)
 
             mock_get_block.assert_not_called()
             mock_start_block.assert_not_called()
@@ -158,8 +158,6 @@ class TestPyDemux(unittest.TestCase):
         """
         Test that continuous polling the block chain for new blocks works correctly
         """
-        initialise_action_dict()
-        initialise_block_id_dict()
         # Internal implementation of get_info() which keeps head_block as var,
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
@@ -175,11 +173,12 @@ class TestPyDemux(unittest.TestCase):
         mock_commit_block = Mock()
 
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
-            process_blocks(9999)
+            d.process_blocks(9999)
 
         # assertions
         assert mock_get_block.call_count == 2
@@ -198,8 +197,6 @@ class TestPyDemux(unittest.TestCase):
         """
         Test that rollbacks are dealt with correctly when continously polling the block chain
         """
-        initialise_action_dict()
-        initialise_block_id_dict()
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
@@ -214,11 +211,12 @@ class TestPyDemux(unittest.TestCase):
         mock_commit_block = Mock()
 
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
-            process_blocks(9999)
+            d.process_blocks(9999)
 
         # assertions
         assert mock_get_block.call_count == 2
@@ -237,8 +235,6 @@ class TestPyDemux(unittest.TestCase):
         """
         Test that continuous polling the block chain for new blocks works correctly
         """
-        initialise_action_dict()
-        initialise_block_id_dict()
         # Internal implementation of get_info() which keeps head_block as var,
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
@@ -255,12 +251,13 @@ class TestPyDemux(unittest.TestCase):
         mock_commit_block = Mock()
 
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
 
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
-            process_blocks(9999)
+            d.process_blocks(9999)
 
         # assertions
         assert mock_get_block.call_count == 3
@@ -279,8 +276,6 @@ class TestPyDemux(unittest.TestCase):
         """
         Test that continuous polling the block chain for new blocks works correctly
         """
-        initialise_action_dict()
-        initialise_block_id_dict()
         # Internal implementation of get_info() which keeps head_block as var,
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
@@ -298,12 +293,13 @@ class TestPyDemux(unittest.TestCase):
         mock_rollback = Mock()
 
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
-        register_rollback(mock_rollback)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block,
+                  rollback_fn=mock_rollback)
+        d.register_action(mock_action)
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
-            process_blocks(9999)
+            d.process_blocks(9999)
 
         # assertions
         assert mock_rollback.call_count == 1
@@ -323,8 +319,6 @@ class TestPyDemux(unittest.TestCase):
         """
         Test that continuous polling the block chain for new blocks works correctly
         """
-        initialise_action_dict()
-        initialise_block_id_dict()
         # Internal implementation of get_info() which keeps head_block as var,
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
@@ -342,12 +336,13 @@ class TestPyDemux(unittest.TestCase):
         mock_rollback = Mock()
 
         # register the mock callback functions
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
-        register_rollback(mock_rollback)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block,
+                  rollback_fn=mock_rollback)
+        d.register_action(mock_action)
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
-            process_blocks(9999)
+            d.process_blocks(9999)
 
         # assertions
         assert mock_rollback.call_count == 1

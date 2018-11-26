@@ -2,7 +2,7 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch
 from eosapi import Client
-from demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, initialise_action_dict
+from demux import Demux
 from tests.utils import fake_block1
 
 # Basic tests for pydemux, run the process_block() functions and connect to the Client
@@ -21,14 +21,11 @@ class TestSimplePyDemux(unittest.TestCase):
         def commit():
             print('Block committed.')
 
-        initialise_action_dict()
-        register_start_commit(start, commit)
-        register_action(action)
-        from demux import start_block_fn, commit_block_fn
+        d = Demux(start_block_fn=start, commit_block_fn=commit)
 
-        assert start_block_fn == start
+        assert d._start_block_fn == start
 #        assert action_fn == action
-        assert commit_block_fn == commit
+        assert d._commit_block_fn == commit
 
     @patch.object(Client, 'get_block')
     @patch.object(Client, 'get_info')
@@ -38,16 +35,15 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
         mock_get_block.return_value = fake_block1
-        # set up the action_dict
-        initialise_action_dict()
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
 
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
-        process_block(9999)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
+        d.process_block(9999)
         mock_start_block.assert_called_once()
         mock_action.assert_called()
         mock_commit_block.assert_called_once()
@@ -61,16 +57,14 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
         mock_get_block.return_value = fake_block1
-        # set up the action_dict
-        initialise_action_dict()
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
 
-        register_start_commit(commit_block=mock_commit_block)
-        register_action(mock_action)
-        process_block(9999)
+        d = Demux(commit_block_fn=mock_commit_block)
+        d.register_action(mock_action)
+        d.process_block(9999)
 
         mock_start_block.assert_not_called()
         mock_action.assert_called()
@@ -84,16 +78,14 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
         mock_get_block.return_value = fake_block1
-        # set up the action_dict
-        initialise_action_dict()
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
 
-        register_start_commit(mock_start_block)
-        register_action(mock_action)
-        process_block(9999)
+        d = Demux(start_block_fn=mock_start_block)
+        d.register_action(mock_action)
+        d.process_block(9999)
 
         mock_start_block.assert_called_once()
         mock_action.assert_called()
@@ -107,15 +99,14 @@ class TestSimplePyDemux(unittest.TestCase):
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
         mock_get_block.return_value = fake_block1
-        # set up the action_dict
-        initialise_action_dict()
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
 
-        register_action(mock_action)
-        process_block(9999)
+        d = Demux()
+        d.register_action(mock_action)
+        d.process_block(9999)
 
         mock_start_block.assert_not_called()
         mock_action.assert_called()
@@ -124,23 +115,26 @@ class TestSimplePyDemux(unittest.TestCase):
 
     @patch.object(Client, 'get_block')
     @patch.object(Client, 'get_info')
-    def test_multiple_block_processing_with_start_and_end_block(self, mock_get_info_head_block, mock_get_block):
+    def test_multiple_block_processing_with_start_and_end_block(self,
+            mock_get_info_head_block, mock_get_block):
         """
         Ensure we can process multiple blocks with a start and end block
         """
         mock_get_info_head_block.return_value = {'head_block_num': 99999999999}
         mock_get_block.return_value = fake_block1
         # set up the action_dict
-        initialise_action_dict()
+        #initialise_action_dict()
         # mock callback functions
         mock_start_block = Mock()
         mock_action = Mock()
         mock_commit_block = Mock()
 
-        register_start_commit(mock_start_block, mock_commit_block)
-        register_action(mock_action)
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block)
+        #register_start_commit(mock_start_block, mock_commit_block)
+        d.register_action(mock_action)
         # process multiple blocks (in this case there are 9)
-        process_blocks(9990,9999)
+        d.process_blocks(9990,9999)
 
         # assert the callback functions were called for each block only
         assert mock_start_block.call_count == 9
