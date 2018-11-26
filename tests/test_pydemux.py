@@ -143,7 +143,6 @@ class TestPyDemux(unittest.TestCase):
 
         assert 'ERROR: End block is past last irreversible block.' in str(excinfo.value)
 
-    #@pytest.mark.skip(reason="Failing at the moment, will fix later, added last_irreversible_block_num to get_info mock")
     @patch.object(Client, 'get_block')
     @patch.object(Client, 'get_info')
     @patch('demux.demux.time.sleep')
@@ -184,18 +183,9 @@ class TestPyDemux(unittest.TestCase):
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
-        # NOTES FROM 22/11/18
-        # Internal implementation of get_block(), test that you are never calling for block after head_block, test you sleep() if block=head_block
-        # After sleep has been called once, advance the head block, sleep called again (raises exception it is expecting),
-        # Never sleep unless at the head of blockchain
-        # 1st time sleep, increment head block
-        # 2nd time sleep, catches exception
-
-    @pytest.mark.skip(reason="Need to fix this test it is incorrect")
     @patch.object(Client, 'get_block')
     @patch.object(Client, 'get_info')
     @patch('demux.demux.time.sleep')
-    @pytest.mark.skip(reason="Failing at the moment, will fix later, added last_irreversible_block_num to get_info mock")
     def test_irreversible_blocks_only(self, mock_sleep,
                                          mock_get_info_head_block,
                                          mock_get_block):
@@ -205,6 +195,7 @@ class TestPyDemux(unittest.TestCase):
         initialise_action_dict()
         initialise_block_id_dict()
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 10000, 'last_irreversible_block_num' : 9900},
@@ -227,7 +218,7 @@ class TestPyDemux(unittest.TestCase):
         assert mock_get_block.call_count == 2
         assert mock_get_block.call_args_list == [call(9999), call(10000)]
         assert mock_start_block.call_count == 2
-        assert mock_action.call_count == 19
+        assert mock_action.call_count == 28
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
