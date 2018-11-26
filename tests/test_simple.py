@@ -2,7 +2,7 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch
 from eosapi import Client
-from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, initialise_action_dict
+from demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, initialise_action_dict
 from tests.utils import fake_block1
 
 # Basic tests for pydemux, run the process_block() functions and connect to the Client
@@ -24,7 +24,7 @@ class TestSimplePyDemux(unittest.TestCase):
         initialise_action_dict()
         register_start_commit(start, commit)
         register_action(action)
-        from demux.demux import start_block_fn, commit_block_fn
+        from demux import start_block_fn, commit_block_fn
 
         assert start_block_fn == start
 #        assert action_fn == action

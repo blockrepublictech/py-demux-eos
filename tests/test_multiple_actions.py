@@ -1,7 +1,7 @@
 import unittest
 import pytest
 from unittest.mock import Mock, patch, call
-from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict
+from demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict
 from tests.utils import block_1, fake_block1, fake_block2
 from collections import defaultdict
 
@@ -44,7 +44,7 @@ class TestActionsPyDemux(unittest.TestCase):
         assert mock_action3.call_count == 2
         assert mock_commit_block.call_count == 1
         # action_dict assertions
-        from demux.demux import action_dict
+        from demux import action_dict
         assert action_dict[('account21', 'name21', 'updates')] == [mock_action1]
         assert action_dict[('account22', 'name22', 'updates')] == [mock_action2]
         assert action_dict[(None, None, 'updates')] == [mock_action3]
@@ -94,7 +94,7 @@ class TestActionsPyDemux(unittest.TestCase):
         assert mock_action4.call_count == 1
         assert mock_commit_block.call_count == 2
         # action_dict assertions
-        from demux.demux import action_dict
+        from demux import action_dict
         assert action_dict[('account11', 'name11', 'updates')] == [mock_action1]
         assert action_dict[('account21', 'name21', 'updates')] == [mock_action2]
         assert action_dict[(None, None, 'updates')] == [mock_action3]
@@ -133,7 +133,7 @@ class TestActionsPyDemux(unittest.TestCase):
         # process the mock fake blocks 1 and 2
         process_blocks(100,102, include_effects=True)
         # action_dict assertions that updates/effects stored correctly
-        from demux.demux import action_dict
+        from demux import action_dict
         assert action_dict[('account11', 'name11', 'effects')] == [mock_action1]
         assert action_dict[('account21', 'name21', 'updates')] == [mock_action2]
         assert action_dict[(None, None, 'effects')] == [mock_action3]

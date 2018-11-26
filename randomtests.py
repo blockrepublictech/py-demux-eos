@@ -1,7 +1,7 @@
 
 @patch.object(Client, 'get_block')
 @patch.object(Client, 'get_info')
-@patch('demux.demux.time.sleep')
+@patch('demux.time.sleep')
 def test_continuous_block_processing(self, mock_sleep,
                                      mock_get_info_head_block,
                                      mock_get_block):
@@ -89,7 +89,7 @@ def test_rollback_function_called(self, mock_get_info_irr_block, mock_get_block)
 
 @patch.object(Client, 'get_block')
 @patch.object(Client, 'get_info')
-@patch('demux.demux.time.sleep')
+@patch('demux.time.sleep')
 def test_continuous_block_processing(self, mock_sleep,
                                      mock_get_info_head_block,
                                      mock_get_block):
@@ -114,7 +114,7 @@ def test_continuous_block_processing(self, mock_sleep,
     register_action(mock_action)
     # process the mock blocks 9999
     with pytest.raises(StopIteration) as excinfo:
-        from demux.demux import block_id_dict
+        from demux import block_id_dict
         print("block_id_dict=", block_id_dict)
         process_blocks(9999998)
      # assertions
