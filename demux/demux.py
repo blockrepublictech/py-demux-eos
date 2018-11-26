@@ -1,6 +1,8 @@
 from eosapi import Client
 import time
 from collections import defaultdict
+from eosapi.exceptions import HttpAPIError
+
 
 # Global variables
 start_block_fn = None
@@ -154,26 +156,34 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
                         block_num += 1
                     # If considering ALL blocks
                     elif not irreversible_only:
-                        process_block(block_num, include_effects, irreversible_only=False)
-                        global block
-                        this_block = block
-                        global last_irr_block
-                        last_irr_block = get_last_irr_block_num()
-                        global block_id_dict
-                        # Update block_id dict to only store blocks > last irreversible block
-                        block_id_dict = {k : v for (k, v) in block_id_dict if k >= last_irr_block}
-                        # Add the current block to the dictionary of block ids
-                        block_id_dict[block_num] = this_block['id']
-                        # If a rollback has occurred (AKA this block does not point to the last processed block in block_id_dict)
-                        if block_num-1 in block_id_dict and this_block['previous'] != block_id_dict[(block_num-1)]:
+                        try:
+                            process_block(block_num, include_effects, irreversible_only=False)
+                        except HttpAPIError as ex:
                             # Call the rollback function if it exists, else silenty continue
                             if rollback_fn is not None:
                                 rollback_fn(last_irr_block)
                             # Continue processing from the next block after the last irreversible block
                             block_num = last_irr_block + 1
-                        # Increment to the next block if no rollback has occurred
                         else:
-                            block_num += 1
+                            global block
+                            this_block = block
+                            global last_irr_block
+                            last_irr_block = get_last_irr_block_num()
+                            global block_id_dict
+                            # Update block_id dict to only store blocks > last irreversible block
+                            block_id_dict = {k : v for (k, v) in block_id_dict if k >= last_irr_block}
+                            # Add the current block to the dictionary of block ids
+                            block_id_dict[block_num] = this_block['id']
+                            # If a rollback has occurred (AKA this block does not point to the last processed block in block_id_dict)
+                            if block_num-1 in block_id_dict and this_block['previous'] != block_id_dict[(block_num-1)]:
+                                # Call the rollback function if it exists, else silenty continue
+                                if rollback_fn is not None:
+                                    rollback_fn(last_irr_block)
+                                # Continue processing from the next block after the last irreversible block
+                                block_num = last_irr_block + 1
+                            # Increment to the next block if no rollback has occurred
+                            else:
+                                block_num += 1
                 # If we have processed the head block and have now incremented to the block after: sleep() until head_block is updated
                 if block_num > head_block:
                     old_head_block = head_block
