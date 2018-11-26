@@ -126,7 +126,7 @@ class Demux(object):
                                 this_block = self._block
                                 self._last_irr_block = self.get_last_irr_block_num()
                                 # Update block_id dict to only store blocks > last irreversible block
-                                block_id_dict = {k : v for (k, v) in self._block_id_dict.items()
+                                self._block_id_dict = {k : v for (k, v) in self._block_id_dict.items()
                                                  if k >= self._last_irr_block}
                                 # Add the current block to the dictionary of block ids
                                 self._block_id_dict[block_num] = this_block['id']
