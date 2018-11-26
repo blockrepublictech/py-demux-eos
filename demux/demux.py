@@ -171,7 +171,7 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
                             last_irr_block = get_last_irr_block_num()
                             global block_id_dict
                             # Update block_id dict to only store blocks > last irreversible block
-                            block_id_dict = {k : v for (k, v) in block_id_dict if k >= last_irr_block}
+                            block_id_dict = {k : v for (k, v) in block_id_dict.items() if k >= last_irr_block}
                             # Add the current block to the dictionary of block ids
                             block_id_dict[block_num] = this_block['id']
                             # If a rollback has occurred (AKA this block does not point to the last processed block in block_id_dict)
@@ -191,6 +191,12 @@ def process_blocks(starting_block, end_block=None, include_effects=False, irreve
                         head_block = get_last_irr_block_num()
                     else:
                         head_block = get_head_block()
+                        if head_block < old_head_block:
+                            # Call the rollback function if it exists, else silenty continue
+                            if rollback_fn is not None:
+                                rollback_fn(last_irr_block)
+                            # Continue processing from the next block after the last irreversible block
+                            block_num = last_irr_block + 1
                     # Sleep for 100ms if head block has not changed
                     if old_head_block == head_block:
                         time.sleep(0.1)

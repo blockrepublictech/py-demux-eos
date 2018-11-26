@@ -1,8 +1,13 @@
 import unittest
 import pytest
 from unittest.mock import Mock, patch, call
-from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict, initialise_block_id_dict
-from tests.utils import block_1, fake_block1, fake_block2, block_9999, block_10000
+from demux.demux import (register_start_commit, register_action,
+                         process_block, process_blocks, get_head_block,
+                         Client, initialise_action_dict,
+                         initialise_block_id_dict, register_rollback)
+
+from tests.utils import (block_1, fake_block1, fake_block2, block_9999,
+                         block_10000, fake_block_10000)
 from collections import defaultdict
 from eosapi.exceptions import HttpAPIError
 
@@ -252,6 +257,7 @@ class TestPyDemux(unittest.TestCase):
         # register the mock callback functions
         register_start_commit(mock_start_block, mock_commit_block)
         register_action(mock_action)
+
         # process the mock blocks 9999
         with pytest.raises(StopIteration) as excinfo:
             process_blocks(9999)
@@ -259,6 +265,94 @@ class TestPyDemux(unittest.TestCase):
         # assertions
         assert mock_get_block.call_count == 3
         assert mock_get_block.call_args_list == [call(9999), call(10000), call(9901)]
+        assert mock_start_block.call_count == 2
+        assert mock_action.call_count == 28
+        assert mock_commit_block.call_count == 2
+        assert mock_sleep.call_count == 1
+
+    @patch.object(Client, 'get_block')
+    @patch.object(Client, 'get_info')
+    @patch('demux.demux.time.sleep')
+    def test_decrease_in_head_block_causes_rollback(self, mock_sleep,
+                                         mock_get_info_head_block,
+                                         mock_get_block):
+        """
+        Test that continuous polling the block chain for new blocks works correctly
+        """
+        initialise_action_dict()
+        initialise_block_id_dict()
+        # Internal implementation of get_info() which keeps head_block as var,
+        mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9901, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9901, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9901, 'last_irreversible_block_num' : 9900}]
+        # get block iterates through blocks each time it is called
+        mock_get_block.side_effect = [block_9999, block_9999]
+
+        mock_start_block = Mock()
+        mock_action = Mock()
+        mock_commit_block = Mock()
+        mock_rollback = Mock()
+
+        # register the mock callback functions
+        register_start_commit(mock_start_block, mock_commit_block)
+        register_action(mock_action)
+        register_rollback(mock_rollback)
+        # process the mock blocks 9999
+        with pytest.raises(StopIteration) as excinfo:
+            process_blocks(9999)
+
+        # assertions
+        assert mock_rollback.call_count == 1
+        assert mock_get_block.call_count == 2
+        assert mock_get_block.call_args_list == [call(9999), call(9901)]
+        assert mock_start_block.call_count == 2
+        assert mock_action.call_count == 28
+        assert mock_commit_block.call_count == 2
+        assert mock_sleep.call_count == 1
+
+    @patch.object(Client, 'get_block')
+    @patch.object(Client, 'get_info')
+    @patch('demux.demux.time.sleep')
+    def test_mismatched_previous_ids_is_a_rollback(self, mock_sleep,
+                                         mock_get_info_head_block,
+                                         mock_get_block):
+        """
+        Test that continuous polling the block chain for new blocks works correctly
+        """
+        initialise_action_dict()
+        initialise_block_id_dict()
+        # Internal implementation of get_info() which keeps head_block as var,
+        mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9900}]
+        # get block iterates through blocks each time it is called
+        mock_get_block.side_effect = [block_9999, fake_block_10000]
+
+        mock_start_block = Mock()
+        mock_action = Mock()
+        mock_commit_block = Mock()
+        mock_rollback = Mock()
+
+        # register the mock callback functions
+        register_start_commit(mock_start_block, mock_commit_block)
+        register_action(mock_action)
+        register_rollback(mock_rollback)
+        # process the mock blocks 9999
+        with pytest.raises(StopIteration) as excinfo:
+            process_blocks(9999)
+
+        # assertions
+        assert mock_rollback.call_count == 1
+        assert mock_get_block.call_count == 2
+        assert mock_get_block.call_args_list == [call(9999), call(10000)]
         assert mock_start_block.call_count == 2
         assert mock_action.call_count == 28
         assert mock_commit_block.call_count == 2
