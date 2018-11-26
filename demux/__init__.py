@@ -73,6 +73,16 @@ class Demux(object):
         if self._commit_block_fn is not None:
             self._commit_block_fn(block=self._block)
 
+    def _post_rollback_process(self):
+        # Verify the irreversible blocks still matches and clean up the now defunction block history
+        if self._last_irr_block in self._block_id_dict:
+            self._block_id_dict = {self._last_irr_block:
+                                   self._block_id_dict[self._last_irr_block]}
+            block = self.get_a_block(self._last_irr_block)
+            assert block['id'] == self._block_id_dict[self._last_irr_block], 'Irreversible block mismatch halting'
+        else:
+            self._block_id_dict = {}
+
     # Function to process multiple blocks
     # Param: starting_block = block to start processing from
     # Param: end_block = stops processing at this block (OPTIONAL)
@@ -120,6 +130,7 @@ class Demux(object):
                                 # Call the rollback function if it exists, else silenty continue
                                 if self._rollback_fn is not None:
                                     self._rollback_fn(last_irr_block)
+                                self._post_rollback_process()
                                 # Continue processing from the next block after the last irreversible block
                                 block_num = self._last_irr_block + 1
                             else:
@@ -135,6 +146,7 @@ class Demux(object):
                                     # Call the rollback function if it exists, else silenty continue
                                     if self._rollback_fn is not None:
                                         self._rollback_fn(self._last_irr_block)
+                                    self._post_rollback_process()
                                     # Continue processing from the next block after the last irreversible block
                                     block_num = self._last_irr_block + 1
                                 # Increment to the next block if no rollback has occurred
@@ -151,6 +163,7 @@ class Demux(object):
                                 # Call the rollback function if it exists, else silenty continue
                                 if self._rollback_fn is not None:
                                     self._rollback_fn(self._last_irr_block)
+                                self._post_rollback_process()
                                 # Continue processing from the next block after the last irreversible block
                                 block_num = self._last_irr_block + 1
                         # Sleep for 100ms if head block has not changed

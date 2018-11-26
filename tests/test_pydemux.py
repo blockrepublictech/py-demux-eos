@@ -352,3 +352,46 @@ class TestPyDemux(unittest.TestCase):
         assert mock_action.call_count == 28
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
+
+    @patch.object(Client, 'get_block')
+    @patch.object(Client, 'get_info')
+    @patch('demux.time.sleep')
+    def test_mismatched_irreverible_blocks_asserts(self, mock_sleep,
+                                         mock_get_info_head_block,
+                                         mock_get_block):
+        """
+        Test that continuous polling the block chain for new blocks works correctly
+        """
+        # Internal implementation of get_info() which keeps head_block as var,
+        mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9999},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9999},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9999},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9999},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9999},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9999},
+                                                {'head_block_num': 10000, 'last_irreversible_block_num' : 9999}]
+        # get block iterates through blocks each time it is called
+        mock_get_block.side_effect = [block_9999, fake_block_10000, block_1]
+
+        mock_start_block = Mock()
+        mock_action = Mock()
+        mock_commit_block = Mock()
+        mock_rollback = Mock()
+
+        # register the mock callback functions
+        d = Demux(start_block_fn=mock_start_block,
+                  commit_block_fn=mock_commit_block,
+                  rollback_fn=mock_rollback)
+        d.register_action(mock_action)
+        # process the mock blocks 9999
+        with pytest.raises(AssertionError) as excinfo:
+            d.process_blocks(9999)
+
+        # assertions
+        assert mock_rollback.call_count == 1
+        assert mock_get_block.call_count == 3
+        assert mock_get_block.call_args_list == [call(9999), call(10000), call(9999)]
+        assert mock_start_block.call_count == 2
+        assert mock_action.call_count == 28
+        assert mock_commit_block.call_count == 2
+        assert mock_sleep.call_count == 1
