@@ -2,7 +2,7 @@ import unittest
 import pytest
 from unittest.mock import Mock, patch, call
 from demux.demux import register_start_commit, register_action, process_block, process_blocks, get_head_block, Client, initialise_action_dict, initialise_block_id_dict
-from tests.utils import block_1, fake_block1, fake_block2
+from tests.utils import block_1, fake_block1, fake_block2, block_9999, block_10000
 from collections import defaultdict
 
 # Tests for py-demux
@@ -143,7 +143,7 @@ class TestPyDemux(unittest.TestCase):
 
         assert 'ERROR: End block is past last irreversible block.' in str(excinfo.value)
 
-    @pytest.mark.skip(reason="Failing at the moment, will fix later, added last_irreversible_block_num to get_info mock")
+    #@pytest.mark.skip(reason="Failing at the moment, will fix later, added last_irreversible_block_num to get_info mock")
     @patch.object(Client, 'get_block')
     @patch.object(Client, 'get_info')
     @patch('demux.demux.time.sleep')
@@ -157,6 +157,7 @@ class TestPyDemux(unittest.TestCase):
         initialise_block_id_dict()
         # Internal implementation of get_info() which keeps head_block as var,
         mock_get_info_head_block.side_effect = [{'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
+                                                {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 9999, 'last_irreversible_block_num' : 9900},
                                                 {'head_block_num': 10000, 'last_irreversible_block_num' : 9900},
@@ -179,7 +180,7 @@ class TestPyDemux(unittest.TestCase):
         assert mock_get_block.call_count == 2
         assert mock_get_block.call_args_list == [call(9999), call(10000)]
         assert mock_start_block.call_count == 2
-        assert mock_action.call_count == 19
+        assert mock_action.call_count == 28
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
