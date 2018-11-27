@@ -6,7 +6,7 @@ pip install --upgrade pip
 
 pip install --upgrade setuptools urllib3[secure]
 
-pip install git+https://github.com/mlockett42/py-eos-api@46c25eae0ecce048cd85b97d06534c8bbd390a35
+pip install requests==2.20.1
 
 pip install pytest
 

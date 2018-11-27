@@ -1,12 +1,12 @@
-# py-demux-eos - Deterministic event-sourced state and side effect handling for blockchain applications 
+# py-demux-eos - Deterministic event-sourced state and side effect handling for blockchain applications
 # Copyright (C) 2018 BlockRepublic Pty Ltd
 # Licenced under the Apache 2.0 Licence
 
-from eosapi import Client
 import time
 from collections import defaultdict
-from eosapi.exceptions import HttpAPIError
 from operator import xor
+import requests
+from .exceptions import UnknownBlockError
 
 
 class Demux(object):
@@ -21,19 +21,27 @@ class Demux(object):
         self._last_irr_block = None
         self._block_id_dict = {}
         self._block = None
-        self._client = Client(nodes=[client_node])
+        self._client_node = client_node
 
     # Function to get a 'block' object given a specified block number
     def get_a_block(self, block_num):
-        return self._client.get_block(block_num)
+        r = requests.post('{}/v1/chain/get_block'.format(self._client_node),
+            json={'block_num_or_id': block_num})
+        if not (r.status_code >= 200 and r.status_code <= 299):
+            raise UnknownBlockError('Error attempting to get block. Statuse code = {}', r.status_code)
+        return r.json()
+
+    def get_info(self):
+        return requests.get('{}/v1/chain/get_info'.format(self._client_node)
+            ).json()
 
     # Function to get the current head block in the chain
     def get_head_block(self):
-        return self._client.get_info()['head_block_num']
+        return self.get_info()['head_block_num']
 
     # Function to get the number of the last irreverisble block on the chain
     def get_last_irr_block_num(self):
-        return self._client.get_info()['last_irreversible_block_num']
+        return self.get_info()['last_irreversible_block_num']
 
     # Function to register action functions: can specify an account and name, or None
     def register_action(self, action, account=None, name=None, is_effect=False):
@@ -130,7 +138,7 @@ class Demux(object):
                         elif not irreversible_only:
                             try:
                                 self.process_block(block_num, include_effects, irreversible_only=False)
-                            except HttpAPIError as ex:
+                            except UnknownBlockError as ex:
                                 # Call the rollback function if it exists, else silenty continue
                                 if self._rollback_fn is not None:
                                     self._rollback_fn(last_irr_block)
