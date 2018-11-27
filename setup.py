@@ -120,8 +120,8 @@ setup(
     #
     # For an analysis of "install_requires" vs pip's requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['git+https://github.com/mlockett42/py-eos-api@46c25eae0ecce048cd85b97d06534c8bbd390a35'],  # Optional
-
+    #TODO: CLean up the dependencies
+    install_requires=[],  # Optional
     # List additional groups of dependencies here (e.g. development
     # dependencies). Users will be able to install these using the "extras"
     # syntax, for example:
