@@ -1,3 +1,154 @@
+# py-demux-eos - Python Demux for EOS
+## Deterministic event-sourced state and side effect handling for blockchain applications
+
+This library allows you the programmer to easily write applications which implement
+the Demux pattern in Python
+
+## What is the Demux Pattern?
+
+The EOS block chain consists of blocks, transactions and actions. Each block
+contains 0 or more transactions, each transaction contains 1 or more actions.
+Transactions which contain more than one action the actions after the first
+the additional actions are inline actions caused by the smart contract.
+For example a game paying out a winner would have one action to finalise the
+game and and inline_account to create the payout.
+
+Programs conforming to the Demux pattern listen for these actions and update
+off chain data stores from the action data.
+
+## Why do we need Demux?
+
+EOS permits us to store data in two different places. One is in memory and
+the other is in the chain history. Storing data in memory is very expensive
+compared to the RAM prices of modern computers. (Approx 20 cents per 1kb as
+of time of writing). Additionally we need to obtain CPU time on a block
+producer to run our application, in EOS this is done by staking for CPU.
+Even then if we stake for large amounts of CPU there is still a hard limit on
+the total amount of CPU a transaction can consume.
+
+This means that storing certain kinds of information in the blockchain is not
+possible because it is simply too expensive.
+
+We could get our application to query the block chain via the block producer
+API but this could require a large number of round trips in some cases.
+
+Demux allows us to run a server that acts as a cache and allows us to perform
+such queries much more cheaply than on chain.
+
+## Updates and Effects
+
+There are two different kinds of functions we can register as action callbacks.
+Updates are functions that only change the state of your internal data stores,
+Effects are functions which change the world outside our application.
+
+Updates are functions which it is safe to call when processing old blocks (eg
+during a restore from the block chain) Effects can only be called when processing
+the live blockchain.
+
+A good example would be if we have a charity smart contract. An update would
+be a function that maintains a record of donor contributions in a standard
+relation database. An Effect would be a function that sends a thank you email
+when a contribution over a certain amount is received.
+
+## What new features does py-demux-eos introduce?
+
+We have added the start_block and commit_block callback functions. The original
+javascript Demux library lacked these functions. These were added so that you,
+the programmer using this library, can write all the data for actions you are
+interested in to a database in a single transaction. This means if you program
+crashes or is unexpected closed down part way through a block your database will
+not end up in a inconstitent state. The only way to recover from such an
+inconsistent state would be replay the entire chain.
+
+## How do I use it in my programs?
+
+Install using pip
+
+```
+pip install  git+https://github.com/mlockett42/py-demux@bbe6cafe82eb176b1ab098f4ffd5b3b933be8e08
+```
+
+Import the Demux class into your code
+```
+from demux import Demux
+```
+
+Instantiate the Demux object
+```
+d = Demux()
+```
+
+Register block level function and the end point you want to call when you
+instantiate the demux class.
+```
+d = Demux(
+  client_node='https://node2.eosphere.io', # The EOS API node you wish to connect to
+  start_block_fn=None, # This function is called when we start processing a block
+  commit_block_fn=None, # This function is called when we complete processing a block
+  rollback_fn=None # This function is called when a chain rollback situation is detected
+  )
+```
+
+### The start_block function
+
+Function prototype
+```
+def start_block(block):
+  pass
+```
+Where block is a dict containing all the raw information from the block. Your
+implementation of this function could do things like start a database transaction
+or record block level information such as the producer, time, or block hash.  
+
+### The commit_block function
+
+Function prototype
+```
+def commit_block(block):
+  pass
+```
+Where block is a dict containing all the raw information from the block. The
+most likely thing your implementation of this function would do is commit
+a database tranasction.
+
+### The rollback function
+
+Function prototype
+```
+def rollback(last_irr_block):
+  pass
+```
+last_irr_block is the block we are rolling back to. Your program should delete
+any information after this block.
+
+### Action handlers
+
+To register your action handlers call.
+
+```
+d.register_action(self, action, account=None, name=None, is_effect=False)
+```
+
+action is your action handler function
+account and name are the account name pair to filter for on this callback. An
+example would be account = 'eosio.token' and name = 'transfer'. Setting both
+to None will call the action function for every action.
+is_effect if true this function is an effect otherwise it is an update
+
+Your action function should have the following prototype.
+
+```
+def handle_action(action, block, transaction):
+    pass
+```
+action is a dict containing the information for this action. Block and
+transaction are also dicts containing the relevant information.
+
+## Running unit tests
+
+Type the following at the console.
+
+```
 virtualenv venv -p python3
 
 source venv/bin/activate
@@ -9,29 +160,9 @@ pip install --upgrade setuptools urllib3[secure]
 pip install requests==2.20.1
 
 pip install pytest
+```
 
-
-Instructions (Notes)
-
-git clone project
-
-use readme to do important things
-
-refer to binary crate readme
-
-1. venv
-2. unit tests
-3. test runner
-
-
-Set-up
---> Install pytest:
-    - In your command line:
-        >> pip install -U pytest
-        >> pytest --version
-    - Your should have pytest version 3.x.y
---> Install future (for testing):
-    - In your command line:
-        >> pip install future
-    - This will be used for testing where:
-        from __future__ import absolute_import
+Run the unit tests
+```
+pytest
+```
