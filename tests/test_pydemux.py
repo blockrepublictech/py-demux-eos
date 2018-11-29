@@ -5,8 +5,8 @@
 import unittest
 import pytest
 from unittest.mock import Mock, patch, call
-from demux import Demux
-from demux.exceptions import UnknownBlockError
+from demuxeos import Demux
+from demuxeos.exceptions import UnknownBlockError
 from tests.utils import (block_1, fake_block1, fake_block2, block_9999,
                          block_10000, fake_block_10000)
 from collections import defaultdict
@@ -155,7 +155,7 @@ class TestPyDemux(unittest.TestCase):
 
     @patch.object(Demux, '_get_block')
     @patch.object(Demux, '_get_info')
-    @patch('demux.time.sleep')
+    @patch('demuxeos.time.sleep')
     def test_continuous_block_processing(self, mock_sleep,
                                          mock_get_info_head_block,
                                          mock_get_block):
@@ -194,7 +194,7 @@ class TestPyDemux(unittest.TestCase):
 
     @patch.object(Demux, '_get_block')
     @patch.object(Demux, '_get_info')
-    @patch('demux.time.sleep')
+    @patch('demuxeos.time.sleep')
     def test_irreversible_blocks_only(self, mock_sleep,
                                          mock_get_info_head_block,
                                          mock_get_block):
@@ -232,7 +232,7 @@ class TestPyDemux(unittest.TestCase):
 
     @patch.object(Demux, '_get_block')
     @patch.object(Demux, '_get_info')
-    @patch('demux.time.sleep')
+    @patch('demuxeos.time.sleep')
     def test_unknown_block_causes_a_rollback(self, mock_sleep,
                                          mock_get_info_head_block,
                                          mock_get_block):
@@ -273,7 +273,7 @@ class TestPyDemux(unittest.TestCase):
 
     @patch.object(Demux, '_get_block')
     @patch.object(Demux, '_get_info')
-    @patch('demux.time.sleep')
+    @patch('demuxeos.time.sleep')
     def test_decrease_in_head_block_causes_rollback(self, mock_sleep,
                                          mock_get_info_head_block,
                                          mock_get_block):
@@ -316,7 +316,7 @@ class TestPyDemux(unittest.TestCase):
 
     @patch.object(Demux, '_get_block')
     @patch.object(Demux, '_get_info')
-    @patch('demux.time.sleep')
+    @patch('demuxeos.time.sleep')
     def test_mismatched_previous_ids_is_a_rollback(self, mock_sleep,
                                          mock_get_info_head_block,
                                          mock_get_block):
@@ -359,7 +359,7 @@ class TestPyDemux(unittest.TestCase):
 
     @patch.object(Demux, '_get_block')
     @patch.object(Demux, '_get_info')
-    @patch('demux.time.sleep')
+    @patch('demuxeos.time.sleep')
     def test_mismatched_irreverible_blocks_asserts(self, mock_sleep,
                                          mock_get_info_head_block,
                                          mock_get_block):

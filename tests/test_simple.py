@@ -5,7 +5,7 @@
 import unittest
 import pytest
 from unittest.mock import Mock, patch
-from demux import Demux
+from demuxeos import Demux
 from tests.utils import fake_block1
 
 # Basic tests for pydemux, run the process_block() functions and connect to the bp api node

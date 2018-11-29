@@ -5,7 +5,7 @@
 import unittest
 import pytest
 from unittest.mock import Mock, patch, call
-from demux import Demux
+from demuxeos import Demux
 from tests.utils import block_1, fake_block1, fake_block2
 from collections import defaultdict
 
