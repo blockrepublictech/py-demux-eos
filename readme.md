@@ -11,7 +11,7 @@ contains 0 or more transactions, each transaction contains 1 or more actions.
 Transactions which contain more than one action the actions after the first
 the additional actions are inline actions caused by the smart contract.
 For example a game paying out a winner would have one action to finalise the
-game and and inline_account to create the payout.
+game and an inline transfer action to create the payout.
 
 Programs conforming to the Demux pattern listen for these actions and update
 off chain data stores from the action data.
@@ -47,7 +47,7 @@ the live blockchain.
 
 A good example would be if we have a charity smart contract. An update would
 be a function that maintains a record of donor contributions in a standard
-relation database. An Effect would be a function that sends a thank you email
+relational database. An Effect would be a function that sends a thank you email
 when a contribution over a certain amount is received.
 
 ## What new features does py-demux-eos introduce?
@@ -55,12 +55,12 @@ when a contribution over a certain amount is received.
 We have added the start_block and commit_block callback functions. The original
 javascript Demux library lacked these functions. These were added so that you,
 the programmer using this library, can write all the data for actions you are
-interested in to a database in a single transaction. This means if you program
-crashes or is unexpected closed down part way through a block your database will
-not end up in a inconstitent state. The only way to recover from such an
-inconsistent state would be replay the entire chain.
+interested in to a database in a single database transaction. This means if you
+program crashes or is unexpected closed down part way through a block your
+database will not end up in a inconstitent state. The only way to recover from
+such an inconsistent state would be replay the entire chain.
 
-## How do I use it in my programs?
+## How do I use py-demux-eos in my programs?
 
 Install using pip
 
@@ -70,7 +70,7 @@ pip install  git+https://github.com/mlockett42/py-demux@bbe6cafe82eb176b1ab098f4
 
 Import the Demux class into your code
 ```
-from demux import Demux
+from demuxeos import Demux
 ```
 
 Instantiate the Demux object
@@ -119,7 +119,7 @@ def rollback(last_irr_block):
   pass
 ```
 last_irr_block is the block we are rolling back to. Your program should delete
-any information after this block.
+any information after this block for your application's storage.
 
 ### Action handlers
 
