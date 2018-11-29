@@ -13,7 +13,7 @@ class TestBlockchainAPI(unittest.TestCase):
     @patch('demux.requests.get')
     def test_info_calls_requests(self, mock_requests_get):
         d = Demux()
-        d.get_info()
+        d._get_info()
         # assertions
         mock_requests_get.assert_called_with('https://node2.eosphere.io/v1/chain/get_info')
 
@@ -21,7 +21,7 @@ class TestBlockchainAPI(unittest.TestCase):
     def test_get_a_block_calls_requests(self, mock_requests_post):
         mock_requests_post.return_value = Mock(status_code=200)
         d = Demux()
-        d.get_a_block(555)
+        d._get_block(555)
         # assertions
         mock_requests_post.assert_called_with('https://node2.eosphere.io/v1/chain/get_block',
             json={'block_num_or_id': 555})
@@ -31,4 +31,4 @@ class TestBlockchainAPI(unittest.TestCase):
         mock_requests_post.return_value = Mock(status_code=500)
         d = Demux()
         with pytest.raises(UnknownBlockError):
-            d.get_a_block(9999999999)
+            d._get_block(9999999999)

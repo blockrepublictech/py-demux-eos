@@ -30,8 +30,8 @@ class TestSimplePyDemux(unittest.TestCase):
 #        assert action_fn == action
         assert d._commit_block_fn == commit
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_start_and_commit_callback_functions_called(self, mock_get_info_head_block, mock_get_block):
         """
         Ensure the start_block and commit_block functions are called when processing a block
@@ -52,8 +52,8 @@ class TestSimplePyDemux(unittest.TestCase):
         mock_commit_block.assert_called_once()
 
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_no_start_block_function(self, mock_get_info_head_block, mock_get_block):
         """
         When users do not want to use the start_block function
@@ -73,8 +73,8 @@ class TestSimplePyDemux(unittest.TestCase):
         mock_action.assert_called()
         mock_commit_block.assert_called_once()
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_no_commit_block_function(self, mock_get_info_head_block, mock_get_block):
         """
         When users do not want to use the commit_block function
@@ -94,8 +94,8 @@ class TestSimplePyDemux(unittest.TestCase):
         mock_action.assert_called()
         mock_commit_block.assert_not_called()
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_only_action_function(self, mock_get_info_head_block, mock_get_block):
         """
         When users only want to use the action function
@@ -116,8 +116,8 @@ class TestSimplePyDemux(unittest.TestCase):
         mock_commit_block.assert_not_called()
 
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_multiple_block_processing_with_start_and_end_block(self,
             mock_get_info_head_block, mock_get_block):
         """

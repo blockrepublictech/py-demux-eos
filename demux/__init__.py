@@ -24,24 +24,24 @@ class Demux(object):
         self._client_node = client_node
 
     # Function to get a 'block' object given a specified block number
-    def get_a_block(self, block_num):
+    def _get_block(self, block_num):
         r = requests.post('{}/v1/chain/get_block'.format(self._client_node),
             json={'block_num_or_id': block_num})
         if not (r.status_code >= 200 and r.status_code <= 299):
             raise UnknownBlockError('Error attempting to get block. Statuse code = {}', r.status_code)
         return r.json()
 
-    def get_info(self):
+    def _get_info(self):
         return requests.get('{}/v1/chain/get_info'.format(self._client_node)
             ).json()
 
     # Function to get the current head block in the chain
     def get_head_block(self):
-        return self.get_info()['head_block_num']
+        return self._get_info()['head_block_num']
 
     # Function to get the number of the last irreverisble block on the chain
     def get_last_irr_block_num(self):
-        return self.get_info()['last_irreversible_block_num']
+        return self._get_info()['last_irreversible_block_num']
 
     # Function to register action functions: can specify an account and name, or None
     def register_action(self, action, account=None, name=None, is_effect=False):
@@ -63,7 +63,7 @@ class Demux(object):
             else:
                 assert False, "ERROR: Block number is past head block."
         # Get the current block if it is valid
-        self._block = self.get_a_block(block_num)
+        self._block = self._get_block(block_num)
         # Start of block processing
         if self._start_block_fn is not None:
             self._start_block_fn(block=self._block)
@@ -90,7 +90,7 @@ class Demux(object):
         if self._last_irr_block in self._block_id_dict:
             self._block_id_dict = {self._last_irr_block:
                                    self._block_id_dict[self._last_irr_block]}
-            block = self.get_a_block(self._last_irr_block)
+            block = self._get_block(self._last_irr_block)
             assert block['id'] == self._block_id_dict[self._last_irr_block], 'Irreversible block mismatch halting'
         else:
             self._block_id_dict = {}

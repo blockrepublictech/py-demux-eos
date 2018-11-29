@@ -15,8 +15,8 @@ from collections import defaultdict
 
 class TestPyDemux(unittest.TestCase):
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_block_with_no_transactions(self, mock_get_info_head_block, mock_get_block):
         """
         Ensure we can process a block with no transactions251
@@ -41,8 +41,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_action.call_count == 0
         mock_commit_block.assert_called_once()
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_single_mock_block_processing(self, mock_get_info_head_block, mock_get_block): #put get_info first
         """
         Tests block processing on a mocked block
@@ -69,8 +69,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_action.call_count == 1
         mock_commit_block.assert_called_once()
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_multiple_mock_block_processing(self, mock_get_info_head_block, mock_get_block):
         """
         Ensures multiple block are processed given a start and end block
@@ -97,8 +97,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_action.call_count == 3
         assert mock_commit_block.call_count == 2
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_cannot_process_past_head_block(self, mock_get_info_head_block, mock_get_block):
         """
         Tests when the end block is more than one block greater than the head block, an assertion is raised and no block is processed
@@ -125,8 +125,8 @@ class TestPyDemux(unittest.TestCase):
 
         assert 'ERROR: End block is past head block.' in str(excinfo.value)
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_cannot_process_past_last_irreversible_block(self, mock_get_info_irr_block, mock_get_block):
         """
         Tests when the end block is more than one block greater than the last irreversible block, an assertion is raised and no block is processed
@@ -153,8 +153,8 @@ class TestPyDemux(unittest.TestCase):
 
         assert 'ERROR: End block is past last irreversible block.' in str(excinfo.value)
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     @patch('demux.time.sleep')
     def test_continuous_block_processing(self, mock_sleep,
                                          mock_get_info_head_block,
@@ -192,8 +192,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     @patch('demux.time.sleep')
     def test_irreversible_blocks_only(self, mock_sleep,
                                          mock_get_info_head_block,
@@ -230,8 +230,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     @patch('demux.time.sleep')
     def test_unknown_block_causes_a_rollback(self, mock_sleep,
                                          mock_get_info_head_block,
@@ -271,8 +271,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     @patch('demux.time.sleep')
     def test_decrease_in_head_block_causes_rollback(self, mock_sleep,
                                          mock_get_info_head_block,
@@ -314,8 +314,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     @patch('demux.time.sleep')
     def test_mismatched_previous_ids_is_a_rollback(self, mock_sleep,
                                          mock_get_info_head_block,
@@ -357,8 +357,8 @@ class TestPyDemux(unittest.TestCase):
         assert mock_commit_block.call_count == 2
         assert mock_sleep.call_count == 1
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     @patch('demux.time.sleep')
     def test_mismatched_irreverible_blocks_asserts(self, mock_sleep,
                                          mock_get_info_head_block,

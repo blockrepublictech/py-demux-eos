@@ -13,8 +13,8 @@ from collections import defaultdict
 
 class TestActionsPyDemux(unittest.TestCase):
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_register_multiple_action_functions(self, mock_get_info_head_block, mock_get_block):
         """
         Tests that multiple action functions are registered to a specific account and name, including actions with no account or name specified
@@ -56,8 +56,8 @@ class TestActionsPyDemux(unittest.TestCase):
                             call.mock_action3(fake_block2.get('transactions')[0]['trx']['transaction'].get('actions')[1], block=fake_block2, transaction=fake_block2.get('transactions')[0]),
                             call.mock_action2(fake_block2.get('transactions')[0]['trx']['transaction'].get('actions')[1], block=fake_block2, transaction=fake_block2.get('transactions')[0])])
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_multiblock_register_multiple_action_functions(self, mock_get_info_head_block, mock_get_block):
         """
         Tests that multiple action functions are registered and called correctly when processing multiple blocks
@@ -106,8 +106,8 @@ class TestActionsPyDemux(unittest.TestCase):
                             call.mock_action3(fake_block2.get('transactions')[0]['trx']['transaction'].get('actions')[1], block=fake_block2, transaction=fake_block2.get('transactions')[0]),
                             call.mock_action4(fake_block2.get('transactions')[0]['trx']['transaction'].get('actions')[1], block=fake_block2, transaction=fake_block2.get('transactions')[0])])
 
-    @patch.object(Demux, 'get_a_block')
-    @patch.object(Demux, 'get_info')
+    @patch.object(Demux, '_get_block')
+    @patch.object(Demux, '_get_info')
     def test_update_effect_action_functions_stored_and_called_correctly(self, mock_get_info_head_block, mock_get_block):
         """
         Test that update and effect action functions are stored and called correctly for multiple blocks
