@@ -166,3 +166,7 @@ Run the unit tests
 ```
 pytest
 ```
+
+## Questions
+
+Feel free to reach out if you have any questions - hello@blockrepublic.tech
