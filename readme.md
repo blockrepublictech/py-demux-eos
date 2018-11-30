@@ -126,7 +126,7 @@ any information after this block for your application's storage.
 To register your action handlers call.
 
 ```
-d.register_action(self, action, account=None, name=None, is_effect=False)
+d.register_action(action, account=None, name=None, is_effect=False)
 ```
 
 action is your action handler function
@@ -143,6 +143,29 @@ def handle_action(action, block, transaction):
 ```
 action is a dict containing the information for this action. Block and
 transaction are also dicts containing the relevant information.
+
+## Start processing blocks
+
+Process a single block
+```
+d.process_block(block_num, include_effects=False, irreversible_only=False)
+```
+block_num = block to process
+include_effects = Execute callback registered as both effects and updates,
+otherwise just execute updates.
+irreversible_only = Only process blocks marked as irreverisble.
+
+Process a range of blocks
+```
+d.process_blocks(starting_block, end_block=None, include_effects=False, irreversible_only=False)
+```
+starting_block = block to start processing at
+end_block = block to finish processing at, if set to None we loop infintely
+processing the head of the chain
+include_effects = Execute callback registered as both effects and updates,
+otherwise just execute updates.
+irreversible_only = Only process blocks marked as irreverisble.
+
 
 ## Running unit tests
 
@@ -167,6 +190,9 @@ Run the unit tests
 pytest
 ```
 
-## Questions
+## Support
 
 Feel free to reach out if you have any questions - hello@blockrepublic.tech
+
+Like this library? Please vote for *eosphereiobp* for block producer and we will
+be able to make more like this.
