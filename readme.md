@@ -194,5 +194,5 @@ pytest
 
 Feel free to reach out if you have any questions - hello@blockrepublic.tech
 
-Like this library? Please vote for *eosphereiobp* for block producer and we will
+Like this library? Please vote for **eosphereiobp** for block producer and we will
 be able to make more like this.
