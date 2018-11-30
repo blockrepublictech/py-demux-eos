@@ -65,7 +65,7 @@ such an inconsistent state would be replay the entire chain.
 Install using pip
 
 ```
-pip install  git+https://github.com/mlockett42/py-demux@bbe6cafe82eb176b1ab098f4ffd5b3b933be8e08
+pip install git+https://github.com/blockrepublictech/py-demux-eos.git@54586e1696b52c81f8c4a3969c2844d7a65c5dee
 ```
 
 Import the Demux class into your code

@@ -1,7 +1,7 @@
 """py-demux-eos module
 
 See:
-https://github.com/mlockett42/py-demux
+https://github.com/blockrepublictech/py-demux-eos
 """
 
 # Always prefer setuptools over distutils
@@ -60,7 +60,7 @@ setup(
     #
     # This field corresponds to the "Home-Page" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#home-page-optional
-    url='https://github.com/mlockett42/py-demux',  # Optional
+    url='https://github.com/blockrepublictech/py-demux-eos',  # Optional
 
     # This should be your name or the name of the organization which owns the
     # project.
