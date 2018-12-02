@@ -144,7 +144,7 @@ def handle_action(action, block, transaction):
 action is a dict containing the information for this action. Block and
 transaction are also dicts containing the relevant information.
 
-## Start processing blocks
+### Start processing blocks
 
 Process a single block
 ```
@@ -166,6 +166,10 @@ include_effects = Execute callback registered as both effects and updates,
 otherwise just execute updates.
 irreversible_only = Only process blocks marked as irreverisble.
 
+### Example code
+
+A small python command line app has been created to demonstrate how to use this
+library. See <https://github.com/blockrepublictech/py-demux-eos-runner>
 
 ## Running unit tests
 
